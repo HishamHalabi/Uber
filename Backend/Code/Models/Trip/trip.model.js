@@ -1,4 +1,7 @@
+
 import { sequelize  ,DataTypes } from "../../Config/db.connection.js";
+import { Driver } from "../Driver/driver.model.js";
+import { User } from "../User/user.model.js";
 
 export const Trip =  sequelize.define('Trip' , {
     ID :  { 
@@ -49,3 +52,17 @@ export const Trip =  sequelize.define('Trip' , {
       }
 
 }) ; 
+
+Driver.hasMany(Trip, {
+  foreignKey: 'driver_id',
+});
+Trip.belongsTo(Driver);
+
+
+User.hasMany(Trip, {
+  foreignKey: 'user_id',
+});
+
+Trip.belongsTo(User, {
+  foreignKey: 'user_id',  // explicitly match the column name
+});

@@ -7,4 +7,4 @@ class TripRepo  extends DBrepository  {
     }
 }  ;
 
-export const DriverR = new TripRepo(Trip) ; 
+export const tripR = new TripRepo(Trip) ; 

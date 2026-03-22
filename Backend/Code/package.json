@@ -12,8 +12,16 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "crypto-js": "^4.2.0",
     "express": "^5.2.1",
+    "file-type": "^21.3.3",
+    "joi": "^18.0.2",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.1.1",
     "mysql2": "^3.20.0",
+    "nodemailer": "^8.0.3",
+    "redis": "^5.11.0",
     "sequelize": "^6.37.8"
   }
 }

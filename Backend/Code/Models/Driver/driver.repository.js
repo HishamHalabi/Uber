@@ -7,4 +7,4 @@ class DriverRepo  extends DBrepository  {
     }
 }  ;
 
-export const DriverR = new DriverRepo(Driver) ; 
+export const driverR = new DriverRepo(Driver) ; 

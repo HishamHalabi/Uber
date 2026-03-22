@@ -1,4 +1,6 @@
 import { sequelize  ,DataTypes } from "../../Config/db.connection.js";
+import { Trip } from "../Trip/trip.model.js";
+import { User } from "../User/user.model.js";
 
 export const Payment =  sequelize.define('Payment' , {
     ID :  { 
@@ -28,3 +30,15 @@ export const Payment =  sequelize.define('Payment' , {
         allowNull : false   
     }
 }) ; 
+
+
+
+
+Trip.hasOne(Payment, {
+  foreignKey: 'trip_id',
+});
+Payment.belongsTo(Trip ,  {
+  foreignKey: 'trip_id',  // explicitly match the column name
+
+});
+
