@@ -1,15 +1,15 @@
 
 import { userR } from "../Models/User/user.reopsitory.js";
 import { BadRequest, NotFound, UnAuthorized } from "../Utils/error.utils.js";
-import { add, get } from "./inMemory.service.js";
+import { add, get } from "./CoreLogic/inMemory.service.js";
 import { comp, encrypt, hash } from "../Utils/crypto.utils.js";
 import { decodeToken, generateAccessToken, generateTokens } from "../Utils/token.utils.js";
 import { Op } from "sequelize";
 import { SendEMail } from "../Utils/nodemailer.utils.js";
 import { driverR } from "../Models/Driver/driver.repository.js";
-export async function sendOtp(id ,email) {  
-    console.log(id ,email)
-    const exist = await get(`otp_${id}`) ;
+export async function sendOtp(email) {  
+    
+    const exist = await get(`otp_${email}}`) ;
     if (exist)  { 
            throw new BadRequest("already have otp") ; 
     }
@@ -18,7 +18,7 @@ export async function sendOtp(id ,email) {
     const  mn =  1E8   ,  mx =   1E9 - 1  ;
     const otp = mn  +  Math.floor((mx -  mn)   *  Math.random()); 
     const exp =   3   *  60   ; 
-    await  add(`otp_${id}` ,`${otp}`,   exp) ; 
+    await  add(`otp_${email}` ,`${otp}`,   exp) ; 
     await SendEMail(email  , "Email verification" ,  `<p>your code is ${otp} </p>`)
     return true ; 
 }
@@ -56,20 +56,21 @@ export async function registDriver(body)  {
       return driver ; 
 }
 
-export async function  verifyEmail(id , otp) { 
-    const exist = await get(`otp_${id}`) ;
+export async function  verifyEmail(email , otp) { 
+    const exist = await get(`otp_${email}`) ;
     if (!exist )  { 
            throw new BadRequest("have no otp or otp expired") ; 
     }
 
+    console.log(otp ,  exist) ;
     if (otp != exist)  { 
-        throw new BadRequest("incorrectOtp"); 
+        throw new BadRequest("incorrect Otp"); 
     }
-    const user =  await userR.FindOne({id}) ; 
+    const user =  await userR.FindOne({email}) ; 
     if (!user)  { 
            throw new NotFound("user not found ") ; 
     }
-    return await userR.Update({ID :  id} , {verified  : true}) ; 
+    return await userR.Update({email} , {verified  : true}) ; 
 }
 
 

@@ -11,12 +11,13 @@ export async function getAllusersC(req,res,next) {
 }
 
 export async function updateProfilePicC(req,res,next) {
-     const data = await updateProfilePic(req.user.ID) ; 
+     const data = await updateProfilePic(req.user.ID , req.file.path) ; 
      return res.status(200).json({Message  : "success"    , success :  true , data}) ;  
 }
 
 export async function updateDataC(req,res,next) {
-     const data = await updateData(req.body) ; 
+
+     const data = await updateData(req.user.ID  , req.body) ; 
      return res.status(200).json({Message  : "updated success"    , success :  true }) ;  
 }
 

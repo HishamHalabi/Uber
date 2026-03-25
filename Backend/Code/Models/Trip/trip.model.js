@@ -17,38 +17,39 @@ export const Trip =  sequelize.define('Trip' , {
          type : DataTypes.INTEGER  , 
          allowNull : false    
     }, 
-    start_lat  : {
+    lat  : {
         type : DataTypes.FLOAT ,
         allowNull : false    
     } , 
-    start_long  : { 
+    lng   : { 
         type : DataTypes.FLOAT ,
         allowNull : false     
     },
-    startTime   :  { 
+    s_time :{ 
         type : DataTypes.DATE ,
         allowNull : false     
     } ,  
-    end_lat : {
+    t_lat : {
         type : DataTypes.FLOAT ,
         allowNull : false  
      } , 
-     end_lng : {
+     t : {
         type : DataTypes.FLOAT ,
         allowNull : false  
      } , 
-     end_time  : { 
+     e_time  : { 
         type : DataTypes.DATE , 
         allowNull  : false 
-     } ,estimated_fare :  { 
+     } ,ETA:  { 
         type : DataTypes.FLOAT   , 
         allowNull  :false
-      }  , actual_fare :  { 
-         type  :DataTypes.FLOAT , 
-         allowNull  : false 
+      },actualETA :  { 
+         type  :DataTypes.FLOAT 
       },status :  { 
-          type :  DataTypes.ENUM(...["matched", "arrived" , "in progress" , "completed" , "cancelled"] ), 
+          type :  DataTypes.ENUM(...["matched", "arrived" , "in progress" , "finished" , "cancelled"] ), 
           defaultValue  : "matched"
+      } ,rem_ETA   :  {
+        type : DataTypes.FLOAT  
       }
 
 }) ; 

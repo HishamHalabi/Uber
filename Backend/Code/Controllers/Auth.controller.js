@@ -14,7 +14,7 @@ export async function SignUpDriver(req, res,next){
 
 
 export async function verifyEmailC(req, res,next){
-     await verifyEmail(req.body.id , req.body.otp) ; 
+     await verifyEmail(req.body.email , req.body.otp) ; 
      return res.status(200).json({Message : "verified successfuly"  , Success : "true" }) ;
 }
 
@@ -45,6 +45,6 @@ export async function retakeAccessToken(req, res,next){
 
 
 export async function sendOtpC(req, res,next){ 
-      await sendOtp(req.params.id , req.body.email) ; 
+      await sendOtp(req.body.email) ; 
        return res.status(200).json({Message : "send otp  success"  , Success : "true"  }) ;
 }

@@ -17,18 +17,18 @@ export const Payment =  sequelize.define('Payment' , {
         allowNull : false 
     },
     status :  { 
-         type : DataTypes.ENUM("pending"  , "completed"   , "failed")  , 
+         type : DataTypes.ENUM("pending"  , "success"   , "failed")  , 
          allowNull : false  , 
          defaultValue :"pending" 
     } , 
     amt :  { 
         type : DataTypes.FLOAT   , 
         allowNull : false   
-    }  ,  
-    uberFees :  { 
-        type : DataTypes.FLOAT   , 
-        allowNull : false   
-    }
+    }, 
+    order_id :  {
+        type :DataTypes.STRING , 
+       allowNull : false
+    } 
 }) ; 
 
 

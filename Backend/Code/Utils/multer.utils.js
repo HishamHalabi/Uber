@@ -1,5 +1,5 @@
 import multer from "multer";
-
+import fs from "fs"
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -20,10 +20,12 @@ export const fileUpload  =  (allowed   = ["image/jpeg" , "image/png"])=>{
     return  multer({
           storage , 
           limits  : {
-           fileSize : 5000
+           fileSize : 500000
           }
          ,fileFilter  :  (req,file , cb)=>{      
-                 if(!allowed.includes(file.mimetype))  { 
+             console.log(file) ;       
+             if(!allowed.includes(file.mimetype))  { 
+                
                      cb(null  , false) ;    
                  }
                  cb(null , true) ;      

@@ -1,0 +1,58 @@
+read :  
+    https://www.pubnub.com/guides/what-is-geohashing/  , https://www.movable-type.co.uk/scripts/geohash.html
+    video : https://www.youtube.com/watch?v=6uhSpLjGLgo
+
+The Idea 
+       dividing world into smaller into smaller  and giving ID which make search faster
+       and finding Nearby drivers easier
+
+diffrent Systems   
+    1.Quadtree  (divide wordls into squares  ..)    >>  s
+                     search by common prefix  i.e bSearch on DB from L..R
+                     start by big box and keep divide twoard goals
+                     Node structure  (like phusical  locations , then  child cells)
+    2.geoHash (divide lon ,lat)
+    3.H3        (H3  is good at updating  ,  with little lat at quey ,  quadtree is very much better at query but updates is bad assume path to root dont exist i think like log each update this hard)
+ 
+       0...15 resoultion
+       the base res is 0 where world is divided into 122 hexa+penta   (20 faces of triangle)
+       
+       so a id of cell at some res is 
+
+      | reserved | mode (hexa or penta) | res (0..15) | reserved | base cell  | child digits (45 from the base hexa keep choosing child and put its number here) |
+
+
+      how find nearest drivers   ? sudo code 
+///////////////////////////////////////////////////////////
+
+ function matchDrivers(rider_location):
+
+    candidates = set()
+
+    for res in [9,8,7]:
+
+        rider_cell = geoToH3(rider_location, res)
+
+        rings = kRingDistances(rider_cell, 2)
+
+        for ring in rings:
+
+            drivers = queryDrivers(ring)
+
+            for d in drivers:
+                if isAvailable(d):
+                    candidates.add(d)
+
+            if len(candidates) >= TARGET:
+                break
+
+        if len(candidates) >= TARGET:
+            break
+
+    rankByDistance(candidates)
+
+    return topN(candidates)
+    return topN(candidates)
+///////////////////////////////////////////////////////////
+
+
