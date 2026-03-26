@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uber | Ops Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #000000;
+            --accent: #276ef1;
+            --accent-soft: rgba(39, 110, 241, 0.1);
+            --bg: #f8f9fb;
+            --sidebar-bg: #000000;
+            --panel-bg: #ffffff;
+            --border: #eaebef;
+            --text: #1f1f1f;
+            --text-soft: #666e7a;
+            --success: #05a357;
+            --error: #e11900;
+            --warning: #f5a623;
+            --glass: rgba(255, 255, 255, 0.8);
+        }
+
+        * { box-sizing: border-box; transition: all 0.2s ease; }
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            margin: 0; padding: 0; 
+            background: var(--bg); 
+            color: var(--text);
+            display: flex; height: 100vh; overflow: hidden;
+        }
+
+        /* Sidebar Customization */
+        .sidebar { 
+            width: 240px; background: var(--sidebar-bg); color: white; 
+            padding: 30px 20px; display: flex; flex-direction: column; gap: 30px;
+        }
+        .logo { font-size: 1.8rem; font-weight: 700; letter-spacing: -1px; margin-bottom: 20px; color: white; }
+        .nav-link { 
+            padding: 12px 16px; border-radius: 8px; color: #a0a0a0; 
+            text-decoration: none; font-weight: 500; cursor: pointer;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .nav-link:hover { background: #222; color: white; }
+        .nav-link.active { background: var(--accent); color: white; }
+
+        /* Main Workspace */
+        .workspace { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .top-bar { 
+            height: 70px; background: var(--panel-bg); border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 40px;
+        }
+        .page-content { flex: 1; padding: 40px; overflow-y: auto; display: none; }
+        .page-content.active { display: block; animation: slideIn 0.3s ease-out; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Modern Panels */
+        .card { 
+            background: var(--panel-bg); border: 1px solid var(--border); 
+            border-radius: 16px; padding: 25px; margin-bottom: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            position: relative;
+        }
+        .card h2 { margin: 0 0 20px 0; font-size: 1.25rem; font-weight: 700; }
+
+        /* Grid System */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+
+        /* Inputs & Buttons */
+        .input-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 6px; }
+        label { font-size: 0.85rem; font-weight: 600; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select { 
+            padding: 12px; border: 1.5px solid var(--border); border-radius: 10px; 
+            font-size: 0.95rem; background: #fafbfc;
+        }
+        input:focus { border-color: var(--accent); background: white; outline: none; box-shadow: 0 0 0 4px var(--accent-soft); }
+
+        .btn { 
+            padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; 
+            border: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-accent { background: var(--accent); color: white; }
+        .btn-ghost { background: #f0f1f4; color: var(--text); }
+        .btn-danger { background: var(--error); color: white; }
+        .btn:hover { filter: brightness(1.2); transform: translateY(-1px); }
+
+        /* Logs Panel (ALWAYS RIGHT) */
+        .logs-panel { 
+            width: 480px; background: #0c0d0e; border-left: 1px solid #222; 
+            display: flex; flex-direction: column; color: #d0d0d0;
+        }
+        .logs-header { 
+            padding: 20px; border-bottom: 1px solid #222; 
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        #log-container { 
+            flex: 1; overflow-y: auto; padding: 20px; 
+            font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; line-height: 1.6;
+        }
+        .log-entry { margin-bottom: 12px; border-bottom: 1px solid #1a1a1a; padding-bottom: 8px; word-wrap: break-word; }
+        .log-time { color: #555; font-size: 0.75rem; }
+        .log-type-success { color: #55ff55; }
+        .log-type-error { color: #ff5555; }
+        .log-type-info { color: #7ab8ff; }
+        .log-type-warning { color: var(--warning); }
+
+        /* Badges */
+        .badge { 
+            padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;
+            text-transform: uppercase; display: inline-block;
+        }
+        .status-online { background: #05a35720; color: var(--success); }
+        .status-offline { background: #e1190020; color: var(--error); }
+        .status-pending { background: #f5a62320; color: var(--warning); }
+        .status-accent { background: var(--accent-soft); color: var(--accent); }
+
+        /* GPS Utility */
+        .gps-card { background: linear-gradient(135deg, #276ef1, #001242); color: white; }
+        .gps-card h2 { color: white; }
+        .gps-card label { color: #a4c5ff; }
+
+        /* Interactive UI Elements */
+        .hidden { display: none !important; }
+        .overlay-card {
+            background: var(--accent-soft); border: 1px dashed var(--accent);
+            border-radius: 12px; padding: 25px; text-align: center;
+        }
+        .spinner {
+            display: inline-block; animation: spin 2s linear infinite; font-size: 1.5rem;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Active Trip Card Styling */
+        #active-trip-card {
+            background: linear-gradient(to right, #ffffff, #f8f9fb);
+            border-left: 6px solid var(--accent);
+        }
+        .meta-stat { display: flex; flex-direction: column; }
+        .meta-stat span:first-child { font-size: 0.75rem; color: var(--text-soft); text-transform: uppercase; font-weight: 700;}
+        .meta-stat span:last-child { font-size: 1.2rem; font-weight: 600; color: var(--text); }
+        
+    </style>
+</head>
+<body>
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+        <div class="logo">Uber.</div>
+        <div class="nav-link active" onclick="showPage('auth', this)">🔐 Authenticate</div>
+        <div class="nav-link" onclick="showPage('ride', this)">🚖 Ride Center</div>
+        <div class="nav-link" onclick="showPage('profile', this)">👤 My Account</div>
+        <div class="nav-link" onclick="showPage('admin', this)">📊 Admin Ops</div>
+        
+        <div style="margin-top: auto;">
+            <div id="socket-badge" class="badge status-offline" style="margin-bottom: 10px; display: block; text-align: center;">Socket Offline</div>
+            <button onclick="connectSocket()" class="btn btn-accent" style="width: 100%;">Connect Socket</button>
+        </div>
+    </nav>
+
+    <!-- WORKSPACE -->
+    <div class="workspace">
+        <div class="top-bar">
+            <h3 id="page-title">Authentication</h3>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <input type="text" id="status-token" readonly placeholder="No Active Token" style="width: 250px; font-size: 0.75rem; background: #f0f1f4; border: none;">
+                <div class="badge status-online">Demo Session</div>
+            </div>
+        </div>
+
+        <!-- PAGE: AUTH -->
+        <div id="page-auth" class="page-content active">
+            <div class="grid">
+                <div class="card">
+                    <h2>Registration</h2>
+                    <div class="input-group">
+                        <label>Account Role</label>
+                        <select id="role">
+                            <option value="user">Passenger</option>
+                            <option value="driver">Driver</option>
+                        </select>
+                    </div>
+                    <div class="input-group"><label>Full Name</label><input type="text" id="name" value="Hisham Halaby"></div>
+                    <div class="input-group"><label>Email Address</label><input type="email" id="email" value="test@uber.com"></div>
+                    <div class="input-group"><label>Phone Number</label><input type="text" id="phoneNumber" value="01012345678"></div>
+                    <div class="input-group"><label>Password</label><input type="password" id="password" value="Password123"></div>
+                    
+                    <div id="driver-fields" class="hidden">
+                        <div class="input-group"><label>National ID</label><input type="text" id="nationalId" value="12345678901234"></div>
+                        <div class="input-group"><label>Car Number</label><input type="text" id="carNo" value="Cairo-999"></div>
+                    </div>
+                    
+                    <button onclick="register()" class="btn btn-primary" style="width: 100%;">Create Account</button>
+                </div>
+
+                <div class="card">
+                    <h2>Verification & Login</h2>
+                    <div class="input-group">
+                        <label>Email Verification (OTP)</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="otp" placeholder="9-digit OTP" style="flex: 1;">
+                            <button onclick="verifyEmail()" class="btn btn-accent">Verify</button>
+                        </div>
+                        <button onclick="resendOtp()" class="btn btn-ghost" style="margin-top: 10px; font-size: 0.8rem;">Resend Code</button>
+                    </div>
+                    <hr style="margin: 25px 0; border: 0; border-top: 1px solid var(--border);">
+                    <button onclick="login()" class="btn btn-accent" style="width: 100%;">Sign In</button>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button onclick="refreshToken()" class="btn btn-ghost" style="flex: 1; font-size: 0.8rem;">Refresh</button>
+                        <button onclick="logout()" class="btn btn-danger" style="flex: 1; font-size: 0.8rem;">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE: RIDE -->
+        <div id="page-ride" class="page-content">
+            <div class="grid">
+                <div class="card gps-card" style="grid-column: 1 / -1;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2>📍 Intelligent Mock GPS</h2>
+                        <button onclick="generateMockGPS()" class="btn" style="background: rgba(255,255,255,0.2); color: white;">✨ Randomize Location</button>
+                    </div>
+                    <p style="opacity: 0.8; font-size: 0.9rem;">Generate realistic coordinates (Cairo region) to test trip matching and tracking.</p>
+                </div>
+
+                <!-- PASSENGER CONTROL -->
+                <div class="card" id="passenger-card">
+                    <h2>🚀 Passenger: New Trip</h2>
+                    
+                    <div id="passenger-searching" class="overlay-card hidden">
+                        <div class="spinner">⏳</div>
+                        <h3 style="margin: 10px 0;">Locating nearby drivers...</h3>
+                        <p style="color: var(--text-soft); font-size: 0.9rem;">Please hold on while we match you.</p>
+                        <button onclick="cancelRide()" class="btn btn-ghost" style="margin-top: 15px;">Cancel Search</button>
+                    </div>
+
+                    <div id="passenger-form">
+                        <div class="grid">
+                            <div class="input-group"><label>Pickup Lat</label><input type="number" id="lat" value="30.0444"></div>
+                            <div class="input-group"><label>Pickup Lng</label><input type="number" id="lng" value="31.2357"></div>
+                        </div>
+                        <div class="grid">
+                            <div class="input-group"><label>Dropoff Lat</label><input type="number" id="tr-lat" value="30.0500"></div>
+                            <div class="input-group"><label>Dropoff Lng</label><input type="number" id="tr-lng" value="31.2400"></div>
+                        </div>
+                        <button onclick="findDriver()" class="btn btn-accent" style="width: 100%; margin-top: 15px;">Search Drivers</button>
+                    </div>
+                </div>
+
+                <!-- DRIVER CONTROL -->
+                <div class="card" id="driver-card">
+                    <h2>🏎️ Driver: Control</h2>
+                    
+                    <div id="driver-form">
+                        <div class="overlay-card hidden" id="incoming-alert" style="background: #eef4ff; border-color: #276ef1; margin-bottom: 20px;">
+                            <h3 style="color: #276ef1; margin: 0 0 10px 0;">🔔 Incoming Request!</h3>
+                            <p id="incoming-meta" style="margin: 0; font-weight: 600;"></p>
+                        </div>
+                        
+                        <div class="input-group"><label>Target Passenger ID (or auto-filled)</label><input type="number" id="passenger-id" placeholder="ID from alert"></div>
+                        <button onclick="acceptRide()" class="btn btn-primary" style="width: 100%;">Accept Ride</button>
+                        
+                        <div style="display: flex; gap: 10px; margin-top: 15px;">
+                            <button id="auto-gps-btn" onclick="toggleAutoGPS()" class="btn btn-ghost" style="flex: 2; font-size: 0.8rem;">📡 Start Auto-GPS</button>
+                            <button onclick="updateLocation()" class="btn btn-accent" style="flex: 1;">Sync Loc</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ACTIVE TRIP PROGRESS VIEW (Global) -->
+                <div class="card" id="active-trip-card" style="grid-column: 1 / -1;" class="hidden">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <h2 id="active-trip-title" style="margin: 0;">🚖 Active Trip Dashboard</h2>
+                                <span id="trip-status-badge" class="badge status-online">inProgress</span>
+                            </div>
+                            <p style="color: var(--text-soft); font-size: 0.95rem; margin-top: 5px;" id="trip-meta-desc">Monitoring live progression and payments.</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <div id="payment-status-badge" class="badge status-pending" style="font-size: 0.85rem; padding: 6px 14px;">💳 Payment: Pending</div>
+                            <br>
+                            <div style="display: flex; gap: 5px; justify-content: flex-end; margin-top: 10px;">
+                                <button onclick="fetchCurrentPayment()" class="btn btn-ghost" style="padding: 6px 12px; font-size: 0.75rem;">Sync Payment</button>
+                                <button onclick="fetchCurrentTrip()" class="btn btn-ghost" style="padding: 6px 12px; font-size: 0.75rem;">Sync Trip</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Trip Stats -->
+                    <div style="display: flex; gap: 40px; background: #fafbfc; padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+                        <div class="meta-stat">
+                            <span>Trip ID</span>
+                            <span id="stat-trip-id">--</span>
+                        </div>
+                        <div class="meta-stat">
+                            <span>Estimated Time</span>
+                            <span id="stat-eta" style="color: var(--accent); font-size: 1.4rem;">-- min</span>
+                        </div>
+                        <div class="meta-stat">
+                            <span>Payment Key</span>
+                            <span id="stat-pay-key" style="font-size: 0.9rem; font-family: monospace;">--</span>
+                        </div>
+                        <div class="meta-stat" style="margin-left: auto; text-align: right;">
+                            <span>Actions</span>
+                            <div style="display: flex; gap: 10px; margin-top: 5px;">
+                                <button onclick="finishTrip()" class="btn btn-accent" style="padding: 8px 16px; font-size: 0.85rem;">Finish Trip</button>
+                                <button onclick="cancelRide()" class="btn btn-danger" style="padding: 8px 16px; font-size: 0.85rem;">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FEEDBACK CARD -->
+                <div class="card hidden" id="feedback-card" style="grid-column: 1 / -1; background: linear-gradient(135deg, #05a357, #01502a); color: white;">
+                    <h2 style="color: white; margin-top: 0;">🌟 Rate Your Trip</h2>
+                    <p style="opacity: 0.9; margin-bottom: 20px;">Your trip #<span id="fb-trip-id">--</span> has completed. Please leave feedback.</p>
+                    <div class="grid" style="margin-bottom: 20px;">
+                        <div class="input-group">
+                            <label style="color: #a4eadc;">Rating (1-5)</label>
+                            <input type="number" id="fb-rating" min="1" max="5" value="5" style="background: white; color: black; border: none; font-weight: bold;">
+                        </div>
+                        <div class="input-group">
+                            <label style="color: #a4eadc;">Comment</label>
+                            <input type="text" id="fb-comment" placeholder="How was your ride?" style="background: white; color: black; border: none;">
+                        </div>
+                    </div>
+                    <button onclick="submitRideFeedback()" class="btn btn-primary" style="background: white; color: #05a357;">Submit Feedback</button>
+                    <button onclick="closeFeedback()" class="btn btn-ghost" style="background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; margin-left: 10px;">Skip</button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- PAGE: PROFILE -->
+        <div id="page-profile" class="page-content">
+            <div class="card" style="max-width: 600px;">
+                <h2>Account Settings</h2>
+                <div class="input-group"><label>Update Name</label><input type="text" id="upd-name"></div>
+                <div class="input-group"><label>Update Phone</label><input type="text" id="upd-phone"></div>
+                <button onclick="updateProfile()" class="btn btn-accent">Save Text Info</button>
+                <hr style="margin: 25px 0;">
+                <div class="input-group">
+                    <label>Profile Picture</label>
+                    <input type="file" id="upd-pic">
+                </div>
+                <button onclick="updateProfilePic()" class="btn btn-primary">Upload New Photo</button>
+                <hr style="margin: 25px 0;">
+                <button onclick="deleteAccount()" class="btn btn-danger" style="width: 100%;">Delete My Account Permanently</button>
+            </div>
+        </div>
+
+        <!-- PAGE: ADMIN -->
+        <div id="page-admin" class="page-content">
+            <div class="card">
+                <h2>Data Explorer</h2>
+                <div class="grid">
+                    <button onclick="fetchData('/trip')" class="btn btn-ghost">Fetch All Trips</button>
+                    <button onclick="fetchData('/payment')" class="btn btn-ghost">Fetch All Payments</button>
+                    <button onclick="fetchData('/feedback')" class="btn btn-ghost">Fetch Feedbacks</button>
+                    <button onclick="fetchData('/location')" class="btn btn-ghost">View Tracked Logs</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Add Manual Feedback</h2>
+                <div class="grid">
+                    <div class="input-group"><label>Trip ID</label><input type="number" id="f-trip-id"></div>
+                    <div class="input-group"><label>Rating (1-5)</label><input type="number" id="f-rating" min="1" max="5"></div>
+                </div>
+                <div class="input-group"><label>Comment</label><input type="text" id="f-content"></div>
+                <button onclick="submitFeedback()" class="btn btn-accent">Submit Review</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PERSISTENT LOGS -->
+    <div class="logs-panel">
+        <div class="logs-header">
+            <span style="font-weight: 700;">LIVE OVERSEER</span>
+            <button onclick="clearLogs()" class="btn btn-ghost" style="padding: 4px 12px; font-size: 0.7rem;">CLEAR</button>
+        </div>
+        <div id="log-container"></div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // Init state
+        document.getElementById('active-trip-card').classList.add('hidden');
+    </script>
+</body>
+</html>

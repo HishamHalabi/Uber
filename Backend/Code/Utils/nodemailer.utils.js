@@ -10,13 +10,13 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export async function SendEMail(to ,   subject , html){
+export async function SendEMail(to, subject, html) {
+
   const info = await transporter.sendMail({
     from: '"Uber" <hishamhalabyshehata@gmail.com>',
     to,
-    subject  , 
+    subject,
     html
   });
 }
 
- 

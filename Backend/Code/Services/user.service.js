@@ -7,7 +7,7 @@ import { tripR } from "../Models/Trip/trip.repository.js";
 import { userR } from "../Models/User/user.reopsitory.js";
 import { UnAuthorized } from "../Utils/error.utils.js";
 import { findCandidates, getCell } from "./CoreLogic/H3.js";
-import { addToSet, deleteFromSet, get, isAvalaible, updateLocation } from "./CoreLogic/inMemory.service.js";
+import { add, addToSet, deleteFromSet, get } from "./CoreLogic/inMemory.service.js";
 import { calc } from "./CoreLogic/ETA.js";
 
 
@@ -20,6 +20,10 @@ const LIMIT = 20;
 
 //1 >>all users 
 //for get profile  >> req.user ,  req.driver already added inside authentication
+
+export async function getAllUsers() {
+    return await userR.FindWithPop({}, Driver);
+}
 
 export async function updateProfilePic(id, path) {
     return await userR.Update({ ID: id }, { profilePic: path });
@@ -50,23 +54,24 @@ export async function deleteUser(id) {
 
 export async function findDrivers(lat, lng, trials = 3) {
     trials = Math.min(trials, 5);
-    let ret = [];
     while (trials--) {
         const candidates = await findCandidates(lat, lng, LIMIT);
         const ret = await Promise.all(
             candidates.map(async driver_id => {
                 const location = await get(`location:${driver_id}`);
+                if (!location) return null;
                 const ETA = await calc(driver_id, lat, lng, location.lat, location.lng);
                 return [driver_id, ETA];
-            })
+            }).filter(r => r != null)
         );
+
         ret.sort((a, b) => {
             return a[1] - b[1];
         })
-        if (ret) break;
+        if (ret.length) return ret;
 
     }
-    return ret;
+    return [];
 }
 
 
@@ -87,5 +92,6 @@ export async function updateDriverLocation(id, lat, lng) {
     }
     await add(`location:${id}`, JSON.stringify({ lat, lng }));
     await updateGroups(lat, lng, id, 1);
+    //console.log(await get(`location:${id}`));
     return { lat, lng };
 }
