@@ -52,33 +52,3 @@ The heart of the system. Visualizes the real-time interaction between a Passenge
 #### 📊 Admin Explorer
 A mission-control panel to monitor all active sessions, payment ledgers, and user feedbacks.
 
----
-
-## ⚙️ Setup & Deployment
-
-1. **Clone & Install**:
-   ```bash
-   git clone [your-repo-url]
-   cd UberOps
-   npm install
-   ```
-2. **Environment**:
-   Create a `.env` in `Backend/Code/` with:
-   - `DB_CONNECTION_STRING`
-   - `JWT_SECRET`
-   - `REDIS_URL`
-3. **Run**:
-   ```bash
-   # Start Backend
-   cd Backend/Code
-   node server.js
-   
-   # Open Frontend
-   # Simply open d:/0Uber/Frontend/index.html in a browser
-   ```
-
----
-
-## 📬 Contact & Contributions
-Built with passion by **Hisham**.  
-[LinkedIn Profile](https://linkedin.com/in/your-profile) | [Portfolio Site](https://your-portfolio.com)
