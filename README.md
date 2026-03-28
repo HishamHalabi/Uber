@@ -3,7 +3,7 @@
 
 # UberOps. | Advanced Ride Orchestration Subsystem
 
-![UberOps Hero Banner](./assets/hero_banner.png)
+![UberOps Hero Banner](./assets/Uber.png)
 
 ## 🚀 Overview
 **UberOps** is a high-performance, real-time ride-sharing engine built from the ground up to solve complex geospatial and concurrency challenges. This isn't just a UI clone; it's a deep-dive into the engineering required to handle thousands of concurrent driver-passenger interactions with atomic integrity.
