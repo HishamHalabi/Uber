@@ -114,6 +114,7 @@ export const socketSchemas = {
     ),
     cancel: joi.array().ordered(
         joi.number().integer().required(),
-        joi.string().required()
+        joi.string().required(),
+        joi.number().valid(0, 1).optional()
     )
 };

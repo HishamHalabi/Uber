@@ -6,15 +6,19 @@ import { tripR } from "../Models/Trip/trip.repository.js";
 import { BadRequest } from "../Utils/error.utils.js";
 import { makePayment } from "./paymob.service.js";
 
-const uberFees = 12, cst = 2;
+const uberFees = Math.floor(process.env.UBER_FEES), cst = Math.floor(process.env.CST);
 export async function registPayment(trip_id, ETA, user, t) {
      const data = await findPayment({ trip_id });
      if (data && data.status != "failed") {
           throw new BadRequest("already have payment")
      }
+     let payment;
      const amt = ETA * cst + uberFees;
      const { paymentKey, order_id } = await makePayment(amt, user);
-     const payment = await PaymentR.Create({ trip_id, amt, order_id }, { transaction: t });
+     if (t)
+          payment = await PaymentR.Create({ trip_id, amt, order_id, payment_key: paymentKey }, { transaction: t });
+     else
+          payment = await PaymentR.Create({ trip_id, amt, order_id, payment_key: paymentKey });
      return { payment, paymentKey };
 }
 

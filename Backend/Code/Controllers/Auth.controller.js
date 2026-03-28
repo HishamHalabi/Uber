@@ -12,6 +12,18 @@ export async function SignUpDriver(req, res, next) {
      return res.status(201).json({ Message: "User created success", Success: "true", driver });
 }
 
+export async function forgetPassword(req, res, next) {
+     await sendOtp(req.body.email);
+     return res.status(200).json({ Message: "send otp  success", Success: "true" });
+}
+
+
+export async function changePasswordC(req, res, next) {
+     await verifyEmail(req.body.email, req.body.otp, req.body.password);
+     return res.status(200).json({ Message: "password changed", Success: "true" });
+}
+
+
 
 export async function verifyEmailC(req, res, next) {
      await verifyEmail(req.body.email, req.body.otp);

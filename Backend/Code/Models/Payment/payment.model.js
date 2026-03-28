@@ -28,6 +28,11 @@ export const Payment = sequelize.define('Payment', {
     order_id: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    payment_key: {
+        type: DataTypes.STRING,
+    }, transiction_id: {
+        type: DataTypes.STRING,
     }
 });
 

@@ -3,396 +3,593 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Uber | Ops Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <title>Uber | System Terminal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #000000;
+            --bg: #0a0b10;
+            --sidebar-bg: rgba(20, 22, 30, 0.6);
+            --panel-bg: rgba(255, 255, 255, 0.03);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-muted: #8b92a5;
             --accent: #276ef1;
-            --accent-soft: rgba(39, 110, 241, 0.1);
-            --bg: #f8f9fb;
-            --sidebar-bg: #000000;
-            --panel-bg: #ffffff;
-            --border: #eaebef;
-            --text: #1f1f1f;
-            --text-soft: #666e7a;
+            --accent-glow: rgba(39, 110, 241, 0.3);
             --success: #05a357;
-            --error: #e11900;
+            --success-glow: rgba(5, 163, 87, 0.3);
+            --danger: #e11900;
+            --danger-glow: rgba(225, 25, 0, 0.3);
             --warning: #f5a623;
-            --glass: rgba(255, 255, 255, 0.8);
         }
 
-        * { box-sizing: border-box; transition: all 0.2s ease; }
-        body { 
-            font-family: 'Outfit', sans-serif; 
-            margin: 0; padding: 0; 
-            background: var(--bg); 
-            color: var(--text);
-            display: flex; height: 100vh; overflow: hidden;
+        * {
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 0;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        /* Sidebar Customization */
-        .sidebar { 
-            width: 240px; background: var(--sidebar-bg); color: white; 
-            padding: 30px 20px; display: flex; flex-direction: column; gap: 30px;
+        body {
+            background-color: var(--bg);
+            background-image: radial-gradient(circle at top right, rgba(39,110,241,0.1) 0%, transparent 40%),
+                              radial-gradient(circle at bottom left, rgba(5,163,87,0.05) 0%, transparent 40%);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
-        .logo { font-size: 1.8rem; font-weight: 700; letter-spacing: -1px; margin-bottom: 20px; color: white; }
-        .nav-link { 
-            padding: 12px 16px; border-radius: 8px; color: #a0a0a0; 
-            text-decoration: none; font-weight: 500; cursor: pointer;
-            display: flex; align-items: center; gap: 12px;
-        }
-        .nav-link:hover { background: #222; color: white; }
-        .nav-link.active { background: var(--accent); color: white; }
 
-        /* Main Workspace */
-        .workspace { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .top-bar { 
-            height: 70px; background: var(--panel-bg); border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between; padding: 0 40px;
-        }
-        .page-content { flex: 1; padding: 40px; overflow-y: auto; display: none; }
-        .page-content.active { display: block; animation: slideIn 0.3s ease-out; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
+        .glass-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 16px;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--panel-border);
+            backdrop-filter: blur(20px);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        .logo-container {
+            margin-bottom: 30px;
+            padding: 0 10px;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            background: linear-gradient(90deg, #fff, #8b92a5);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-item {
+            padding: 14px 18px;
+            border-radius: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item:hover {
+            color: var(--text-main);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .nav-item.active {
+            color: #fff;
+            background: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .workspace {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .topbar {
+            height: 80px;
+            border-bottom: 1px solid var(--panel-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            background: rgba(10, 11, 16, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 5;
+        }
+
+        .topbar h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+        }
+
+        .page-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .page-content.active {
+            display: block;
+            animation: fadeUp 0.5s forwards;
+        }
+
+        @keyframes fadeUp {
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Modern Panels */
-        .card { 
-            background: var(--panel-bg); border: 1px solid var(--border); 
-            border-radius: 16px; padding: 25px; margin-bottom: 25px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
             position: relative;
+            overflow: hidden;
         }
-        .card h2 { margin: 0 0 20px 0; font-size: 1.25rem; font-weight: 700; }
 
-        /* Grid System */
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        }
 
-        /* Inputs & Buttons */
-        .input-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 6px; }
-        label { font-size: 0.85rem; font-weight: 600; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.5px; }
-        input, select { 
-            padding: 12px; border: 1.5px solid var(--border); border-radius: 10px; 
-            font-size: 0.95rem; background: #fafbfc;
+        .card h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        input:focus { border-color: var(--accent); background: white; outline: none; box-shadow: 0 0 0 4px var(--accent-soft); }
 
-        .btn { 
-            padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; 
-            border: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-accent { background: var(--accent); color: white; }
-        .btn-ghost { background: #f0f1f4; color: var(--text); }
-        .btn-danger { background: var(--error); color: white; }
-        .btn:hover { filter: brightness(1.2); transform: translateY(-1px); }
 
-        /* Logs Panel (ALWAYS RIGHT) */
-        .logs-panel { 
-            width: 480px; background: #0c0d0e; border-left: 1px solid #222; 
-            display: flex; flex-direction: column; color: #d0d0d0;
+        label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .logs-header { 
-            padding: 20px; border-bottom: 1px solid #222; 
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        #log-container { 
-            flex: 1; overflow-y: auto; padding: 20px; 
-            font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; line-height: 1.6;
-        }
-        .log-entry { margin-bottom: 12px; border-bottom: 1px solid #1a1a1a; padding-bottom: 8px; word-wrap: break-word; }
-        .log-time { color: #555; font-size: 0.75rem; }
-        .log-type-success { color: #55ff55; }
-        .log-type-error { color: #ff5555; }
-        .log-type-info { color: #7ab8ff; }
-        .log-type-warning { color: var(--warning); }
 
-        /* Badges */
-        .badge { 
-            padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;
-            text-transform: uppercase; display: inline-block;
+        input, select {
+            width: 100%;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            outline: none;
         }
-        .status-online { background: #05a35720; color: var(--success); }
-        .status-offline { background: #e1190020; color: var(--error); }
-        .status-pending { background: #f5a62320; color: var(--warning); }
-        .status-accent { background: var(--accent-soft); color: var(--accent); }
 
-        /* GPS Utility */
-        .gps-card { background: linear-gradient(135deg, #276ef1, #001242); color: white; }
-        .gps-card h2 { color: white; }
-        .gps-card label { color: #a4c5ff; }
-
-        /* Interactive UI Elements */
-        .hidden { display: none !important; }
-        .overlay-card {
-            background: var(--accent-soft); border: 1px dashed var(--accent);
-            border-radius: 12px; padding: 25px; text-align: center;
+        input:focus, select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+            background: rgba(255,255,255,0.05);
         }
-        .spinner {
-            display: inline-block; animation: spin 2s linear infinite; font-size: 1.5rem;
-        }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* Active Trip Card Styling */
-        #active-trip-card {
-            background: linear-gradient(to right, #ffffff, #f8f9fb);
-            border-left: 6px solid var(--accent);
-        }
-        .meta-stat { display: flex; flex-direction: column; }
-        .meta-stat span:first-child { font-size: 0.75rem; color: var(--text-soft); text-transform: uppercase; font-weight: 700;}
-        .meta-stat span:last-child { font-size: 1.2rem; font-weight: 600; color: var(--text); }
         
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent);
+        }
+
+        .btn {
+            padding: 14px 24px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+            opacity: 0;
+            transform: scale(0.5);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .btn:hover::after {
+            opacity: 1; transform: scale(1);
+        }
+
+        .btn:active { transform: scale(0.98); }
+
+        .btn-primary { background: white; color: black; }
+        .btn-accent { background: var(--accent); color: white; box-shadow: 0 4px 15px var(--accent-glow); }
+        .btn-success { background: var(--success); color: white; box-shadow: 0 4px 15px var(--success-glow); }
+        .btn-danger { background: var(--danger); color: white; box-shadow: 0 4px 15px var(--danger-glow); }
+        .btn-ghost { background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); }
+        .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+
+        .role-badge {
+            display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+        }
+        .role-passenger { background: rgba(39, 110, 241, 0.2); color: #8ab4f8; border: 1px solid rgba(39, 110, 241, 0.4); }
+        .role-driver { background: rgba(5, 163, 87, 0.2); color: #81c995; border: 1px solid rgba(5, 163, 87, 0.4); }
+
+        .logs-panel {
+            width: 400px;
+            background: #050508;
+            border-left: 1px solid #1a1c23;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .logs-header {
+            padding: 20px;
+            border-bottom: 1px solid #1a1c23;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        #log-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .log-entry {
+            padding: 10px 12px;
+            border-radius: 8px;
+            border-left: 3px solid transparent;
+            background: rgba(255,255,255,0.02);
+            word-break: break-all;
+            animation: slideLeft 0.3s ease-out;
+        }
+
+        @keyframes slideLeft {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .log-time { color: #555; font-size: 0.7rem; margin-bottom: 4px; display: block; }
+        .log-info { border-left-color: #8ab4f8; color: #d2e3fc; }
+        .log-success { border-left-color: #81c995; color: #ceead6; }
+        .log-error { border-left-color: #f28b82; color: #fad2cf; }
+        .log-warning { border-left-color: #fde293; color: #feefc3; }
+
+        .hidden { display: none !important; }
+        .flex-row { display: flex; gap: 15px; }
+        .flex-1 { flex: 1; }
+
+        .radar {
+            position: relative; width: 100px; height: 100px; margin: 20px auto; border-radius: 50%;
+            background: rgba(39, 110, 241, 0.1); border: 1px solid rgba(39, 110, 241, 0.3);
+            display: flex; align-items: center; justify-content: center; font-size: 2rem;
+        }
+        .radar::before {
+            content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%;
+            border: 2px solid var(--accent); opacity: 0; animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+        @keyframes ping {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
     </style>
 </head>
 <body>
-    <!-- SIDEBAR -->
-    <nav class="sidebar">
-        <div class="logo">Uber.</div>
-        <div class="nav-link active" onclick="showPage('auth', this)">🔐 Authenticate</div>
-        <div class="nav-link" onclick="showPage('ride', this)">🚖 Ride Center</div>
-        <div class="nav-link" onclick="showPage('profile', this)">👤 My Account</div>
-        <div class="nav-link" onclick="showPage('admin', this)">📊 Admin Ops</div>
+
+    <nav class="sidebar glass-panel" style="border-radius: 0;">
+        <div class="logo-container">
+            <div class="logo">UberOps.</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px; font-family: monospace;">Advanced Subsystem</div>
+        </div>
         
-        <div style="margin-top: auto;">
-            <div id="socket-badge" class="badge status-offline" style="margin-bottom: 10px; display: block; text-align: center;">Socket Offline</div>
-            <button onclick="connectSocket()" class="btn btn-accent" style="width: 100%;">Connect Socket</button>
+        <div class="nav-item active" onclick="nav('auth', this)">🔐 Identity Gateway</div>
+        <div class="nav-item" onclick="nav('ride', this)">🚖 Ride Telemetry</div>
+        <div class="nav-item" onclick="nav('profile', this)">👤 Profile & Config</div>
+        <div class="nav-item" onclick="nav('admin', this)">📊 Admin Explorer</div>
+
+        <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px;">
+            <div class="glass-panel" style="padding: 15px; text-align: center;">
+                <div id="socket-status" style="font-size: 0.8rem; color: var(--danger); font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <div id="socket-dot" class="status-dot" style="background: var(--danger);"></div> <span id="socket-text">Disconnected</span>
+                </div>
+                <button onclick="connectSocket()" class="btn btn-ghost" style="padding: 10px;">Connect Socket</button>
+            </div>
         </div>
     </nav>
 
-    <!-- WORKSPACE -->
     <div class="workspace">
-        <div class="top-bar">
-            <h3 id="page-title">Authentication</h3>
-            <div style="display: flex; gap: 15px; align-items: center;">
-                <input type="text" id="status-token" readonly placeholder="No Active Token" style="width: 250px; font-size: 0.75rem; background: #f0f1f4; border: none;">
-                <div class="badge status-online">Demo Session</div>
+        <div class="topbar">
+            <h1 id="page-title">Identity Gateway</h1>
+            <div class="status-pill">
+                <span style="color: var(--text-muted);">Session:</span>
+                <span id="token-display" style="font-family: monospace; color: var(--accent);">No Token</span>
             </div>
         </div>
 
-        <!-- PAGE: AUTH -->
+        <!-- AUTH PAGE -->
         <div id="page-auth" class="page-content active">
             <div class="grid">
-                <div class="card">
-                    <h2>Registration</h2>
+                <!-- Registration -->
+                <div class="card glass-panel">
+                    <h2>Create Identity</h2>
                     <div class="input-group">
-                        <label>Account Role</label>
-                        <select id="role">
+                        <label>Role</label>
+                        <select id="role" onchange="toggleDriverFields()">
                             <option value="user">Passenger</option>
                             <option value="driver">Driver</option>
                         </select>
                     </div>
-                    <div class="input-group"><label>Full Name</label><input type="text" id="name" value="Hisham Halaby"></div>
-                    <div class="input-group"><label>Email Address</label><input type="email" id="email" value="test@uber.com"></div>
-                    <div class="input-group"><label>Phone Number</label><input type="text" id="phoneNumber" value="01012345678"></div>
-                    <div class="input-group"><label>Password</label><input type="password" id="password" value="Password123"></div>
+                    <div class="flex-row">
+                        <div class="input-group flex-1"><label>Name</label><input type="text" id="name" value="Hisham"></div>
+                        <div class="input-group flex-1"><label>Phone</label><input type="text" id="phoneNumber" value="01012345678"></div>
+                    </div>
+                    <div class="input-group"><label>Email</label><input type="email" id="email" value="ops@uber.com"></div>
+                    <div class="input-group"><label>Password</label><input type="password" id="password" value="Pass1234"></div>
                     
-                    <div id="driver-fields" class="hidden">
-                        <div class="input-group"><label>National ID</label><input type="text" id="nationalId" value="12345678901234"></div>
-                        <div class="input-group"><label>Car Number</label><input type="text" id="carNo" value="Cairo-999"></div>
+                    <div id="driver-fields" class="hidden flex-row">
+                        <div class="input-group flex-1"><label>National ID</label><input type="text" id="nationalId" value="12345678901234"></div>
+                        <div class="input-group flex-1"><label>Car No</label><input type="text" id="carNo" value="C-999"></div>
                     </div>
                     
-                    <button onclick="register()" class="btn btn-primary" style="width: 100%;">Create Account</button>
+                    <button onclick="register()" class="btn btn-primary" style="margin-top: 10px;">Register Account</button>
                 </div>
 
-                <div class="card">
-                    <h2>Verification & Login</h2>
-                    <div class="input-group">
-                        <label>Email Verification (OTP)</label>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="text" id="otp" placeholder="9-digit OTP" style="flex: 1;">
-                            <button onclick="verifyEmail()" class="btn btn-accent">Verify</button>
+                <!-- OTP & Login -->
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                    <div class="card glass-panel">
+                        <h2>Email Verification</h2>
+                        <div class="flex-row">
+                            <div class="input-group flex-1"><input type="text" id="otp" placeholder="Enter OTP"></div>
+                            <button onclick="verifyEmail()" class="btn btn-success" style="width: auto;">Verify</button>
                         </div>
-                        <button onclick="resendOtp()" class="btn btn-ghost" style="margin-top: 10px; font-size: 0.8rem;">Resend Code</button>
+                        <button onclick="resendOtp()" class="btn btn-ghost" style="margin-top: 5px;">Resend OTP</button>
                     </div>
-                    <hr style="margin: 25px 0; border: 0; border-top: 1px solid var(--border);">
-                    <button onclick="login()" class="btn btn-accent" style="width: 100%;">Sign In</button>
-                    <div style="display: flex; gap: 10px; margin-top: 15px;">
-                        <button onclick="refreshToken()" class="btn btn-ghost" style="flex: 1; font-size: 0.8rem;">Refresh</button>
-                        <button onclick="logout()" class="btn btn-danger" style="flex: 1; font-size: 0.8rem;">Logout</button>
+
+                    <div class="card glass-panel">
+                        <h2>Authenticate</h2>
+                        <button onclick="login()" class="btn btn-accent">Secure Sign In</button>
+                        <div class="flex-row" style="margin-top: 10px;">
+                            <button onclick="refreshToken()" class="btn btn-ghost flex-1">Refresh Token</button>
+                            <button onclick="logout()" class="btn btn-danger flex-1">Logout</button>
+                        </div>
                     </div>
+                </div>
+
+                <!-- Password Auth -->
+                <div class="card glass-panel">
+                    <h2>Credential Recovery</h2>
+                    <button onclick="forgetPassword()" class="btn btn-ghost" style="margin-bottom: 15px;">1. Send Reset OTP</button>
+                    <div class="input-group"><label>New Password</label><input type="password" id="new-password" placeholder="New Password"></div>
+                    <div class="input-group"><label>Reset OTP</label><input type="text" id="reset-otp" placeholder="OTP from email"></div>
+                    <button onclick="changePassword()" class="btn btn-accent" style="margin-top: 10px;">2. Execute Change</button>
                 </div>
             </div>
         </div>
 
-        <!-- PAGE: RIDE -->
+        <!-- RIDE PAGE -->
         <div id="page-ride" class="page-content">
             <div class="grid">
-                <div class="card gps-card" style="grid-column: 1 / -1;">
+                <!-- PASSENGER -->
+                <div class="card glass-panel" style="border-top: 4px solid #8ab4f8;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h2>📍 Intelligent Mock GPS</h2>
-                        <button onclick="generateMockGPS()" class="btn" style="background: rgba(255,255,255,0.2); color: white;">✨ Randomize Location</button>
+                        <h2 style="color: #8ab4f8;">🧍 Passenger Panel</h2>
+                        <span class="role-badge role-passenger">Client Mode</span>
                     </div>
-                    <p style="opacity: 0.8; font-size: 0.9rem;">Generate realistic coordinates (Cairo region) to test trip matching and tracking.</p>
-                </div>
-
-                <!-- PASSENGER CONTROL -->
-                <div class="card" id="passenger-card">
-                    <h2>🚀 Passenger: New Trip</h2>
                     
-                    <div id="passenger-searching" class="overlay-card hidden">
-                        <div class="spinner">⏳</div>
-                        <h3 style="margin: 10px 0;">Locating nearby drivers...</h3>
-                        <p style="color: var(--text-soft); font-size: 0.9rem;">Please hold on while we match you.</p>
-                        <button onclick="cancelRide()" class="btn btn-ghost" style="margin-top: 15px;">Cancel Search</button>
+                    <div id="p-idle">
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Request a new ride by setting terminal coordinates.</p>
+                        <div class="flex-row">
+                            <div class="input-group flex-1"><label>Pick Lat</label><input type="number" id="p-lat" value="30.0444"></div>
+                            <div class="input-group flex-1"><label>Pick Lng</label><input type="number" id="p-lng" value="31.2357"></div>
+                        </div>
+                        <div class="flex-row" style="margin-top: 10px;">
+                            <div class="input-group flex-1"><label>Drop Lat</label><input type="number" id="p-tr-lat" value="30.0500"></div>
+                            <div class="input-group flex-1"><label>Drop Lng</label><input type="number" id="p-tr-lng" value="31.2400"></div>
+                        </div>
+                        <button onclick="findDriver()" class="btn btn-primary" style="margin-top: 20px;">Deploy Ride Request</button>
                     </div>
 
-                    <div id="passenger-form">
-                        <div class="grid">
-                            <div class="input-group"><label>Pickup Lat</label><input type="number" id="lat" value="30.0444"></div>
-                            <div class="input-group"><label>Pickup Lng</label><input type="number" id="lng" value="31.2357"></div>
-                        </div>
-                        <div class="grid">
-                            <div class="input-group"><label>Dropoff Lat</label><input type="number" id="tr-lat" value="30.0500"></div>
-                            <div class="input-group"><label>Dropoff Lng</label><input type="number" id="tr-lng" value="31.2400"></div>
-                        </div>
-                        <button onclick="findDriver()" class="btn btn-accent" style="width: 100%; margin-top: 15px;">Search Drivers</button>
+                    <div id="p-searching" class="hidden" style="text-align: center; padding: 30px 0;">
+                        <div class="radar">🛸</div>
+                        <h3 style="margin-bottom: 15px; color: var(--accent);">Locating Drivers...</h3>
+                        <button onclick="cancelSearch()" class="btn btn-ghost">Abort Search</button>
                     </div>
                 </div>
 
-                <!-- DRIVER CONTROL -->
-                <div class="card" id="driver-card">
-                    <h2>🏎️ Driver: Control</h2>
+                <!-- DRIVER -->
+                <div class="card glass-panel" style="border-top: 4px solid #81c995;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="color: #81c995;">🏎️ Driver Panel</h2>
+                        <span class="role-badge role-driver">Pilot Mode</span>
+                    </div>
+
+                    <div id="d-idle">
+                        <div class="glass-panel" style="padding: 20px; background: rgba(5, 163, 87, 0.05); border-color: rgba(5, 163, 87, 0.2); margin-bottom: 20px;">
+                            <h3 style="font-size: 1rem; color: #81c995; margin-bottom: 15px;">Telemetry Stream</h3>
+                            <div class="flex-row">
+                                <div class="input-group flex-1"><label>Lat</label><input type="number" id="d-lat" value="30.0450"></div>
+                                <div class="input-group flex-1"><label>Lng</label><input type="number" id="d-lng" value="31.2360"></div>
+                            </div>
+                            <div class="flex-row" style="margin-top: 15px;">
+                                <button onclick="syncLocation()" class="btn btn-ghost flex-1">Push Node</button>
+                                <button id="auto-gps-btn" onclick="toggleAutoGPS()" class="btn btn-success flex-1" style="background: rgba(5, 163, 87, 0.2); color: #81c995;">Start Auto-GPS</button>
+                            </div>
+                        </div>
+
+                        <div id="d-incoming" class="hidden" style="background: rgba(39, 110, 241, 0.1); border: 1px solid var(--accent); border-radius: 12px; padding: 20px; text-align: center;">
+                            <h3 style="color: #8ab4f8; margin-bottom: 10px;">🚨 Incoming Dispatch</h3>
+                            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px;" id="incoming-desc"></p>
+                            <button onclick="acceptRide()" class="btn btn-accent">Accept Dispatch</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ACTIVE TRIP (GLOBAL) -->
+                <div id="r-active" class="card glass-panel hidden" style="grid-column: 1 / -1; border: 1px solid var(--accent); box-shadow: 0 0 30px rgba(39, 110, 241, 0.1);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2>🌐 Active Master Trip</h2>
+                        <div id="act-stat-container" style="display: flex; gap: 10px;">
+                            <div class="status-pill" style="background: var(--accent-glow); color: #8ab4f8; border: none;" id="act-stat-badge">Matched</div>
+                        </div>
+                    </div>
                     
-                    <div id="driver-form">
-                        <div class="overlay-card hidden" id="incoming-alert" style="background: #eef4ff; border-color: #276ef1; margin-bottom: 20px;">
-                            <h3 style="color: #276ef1; margin: 0 0 10px 0;">🔔 Incoming Request!</h3>
-                            <p id="incoming-meta" style="margin: 0; font-weight: 600;"></p>
-                        </div>
-                        
-                        <div class="input-group"><label>Target Passenger ID (or auto-filled)</label><input type="number" id="passenger-id" placeholder="ID from alert"></div>
-                        <button onclick="acceptRide()" class="btn btn-primary" style="width: 100%;">Accept Ride</button>
-                        
-                        <div style="display: flex; gap: 10px; margin-top: 15px;">
-                            <button id="auto-gps-btn" onclick="toggleAutoGPS()" class="btn btn-ghost" style="flex: 2; font-size: 0.8rem;">📡 Start Auto-GPS</button>
-                            <button onclick="updateLocation()" class="btn btn-accent" style="flex: 1;">Sync Loc</button>
-                        </div>
+                    <div class="grid" style="grid-template-columns: repeat(4, 1fr); margin-top: 20px; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px;">
+                        <div><label>Trip ID</label><div style="font-size: 1.5rem; font-weight: 700; color: white;" id="act-trip-id">--</div></div>
+                        <div><label>Rem ETA</label><div style="font-size: 1.5rem; font-weight: 700; color: var(--accent);" id="act-eta">-- min</div></div>
+                        <div><label>Payment Stat</label><div style="font-size: 1.2rem; font-weight: 600; color: var(--warning);" id="act-pay-stat">Pending</div></div>
+                        <div><label>Payment Key</label><div style="font-size: 0.85rem; font-family: monospace; color: var(--text-muted); margin-top: 5px; word-break: break-all;" id="act-pay-key">--</div></div>
                     </div>
+
+                        <div id="active-actions" class="flex-row" style="margin-top: 20px; justify-content: flex-end; align-items: center;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: white; margin-right: 20px;">
+                                <input type="checkbox" id="need-refund-chk"> Require Refund on Cancel
+                            </label>
+                            <button onclick="refreshTripStatus()" class="btn btn-ghost" style="width: auto;">🔄 Refresh Trip</button>
+                            <button onclick="refreshPaymentStatus()" class="btn btn-ghost" style="width: auto;">💳 Refresh Pay Status</button>
+                            <button onclick="retryPayment()" class="btn btn-ghost" style="width: auto;">Retry Pay</button>
+                            <button onclick="finishTrip()" class="btn btn-success" style="width: auto;">Complete Trip</button>
+                            <button onclick="cancelActiveRide()" class="btn btn-danger" style="width: auto;">Cancel Trip</button>
+                        </div>
                 </div>
 
-                <!-- ACTIVE TRIP PROGRESS VIEW (Global) -->
-                <div class="card" id="active-trip-card" style="grid-column: 1 / -1;" class="hidden">
-                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
-                        <div>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <h2 id="active-trip-title" style="margin: 0;">🚖 Active Trip Dashboard</h2>
-                                <span id="trip-status-badge" class="badge status-online">inProgress</span>
-                            </div>
-                            <p style="color: var(--text-soft); font-size: 0.95rem; margin-top: 5px;" id="trip-meta-desc">Monitoring live progression and payments.</p>
-                        </div>
-                        <div style="text-align: right;">
-                            <div id="payment-status-badge" class="badge status-pending" style="font-size: 0.85rem; padding: 6px 14px;">💳 Payment: Pending</div>
-                            <br>
-                            <div style="display: flex; gap: 5px; justify-content: flex-end; margin-top: 10px;">
-                                <button onclick="fetchCurrentPayment()" class="btn btn-ghost" style="padding: 6px 12px; font-size: 0.75rem;">Sync Payment</button>
-                                <button onclick="fetchCurrentTrip()" class="btn btn-ghost" style="padding: 6px 12px; font-size: 0.75rem;">Sync Trip</button>
-                            </div>
-                        </div>
+                <!-- FEEDBACK -->
+                <div id="r-feedback" class="card glass-panel hidden" style="grid-column: 1 / -1; text-align: center; border: 1px solid var(--success);">
+                    <h2 style="justify-content: center; color: var(--success);">Trip Completed</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 20px;">Trip <span id="fb-trip-id" style="color: white; font-weight: bold;">--</span> is finished. Submit logs to Data Explorer.</p>
+                    
+                    <div class="flex-row" style="max-width: 400px; margin: 0 auto 20px;">
+                        <div class="input-group flex-1"><label>Rating (1-5)</label><input type="number" id="fb-rating" value="5" min="1" max="5"></div>
                     </div>
-
-                    <!-- Live Trip Stats -->
-                    <div style="display: flex; gap: 40px; background: #fafbfc; padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
-                        <div class="meta-stat">
-                            <span>Trip ID</span>
-                            <span id="stat-trip-id">--</span>
-                        </div>
-                        <div class="meta-stat">
-                            <span>Estimated Time</span>
-                            <span id="stat-eta" style="color: var(--accent); font-size: 1.4rem;">-- min</span>
-                        </div>
-                        <div class="meta-stat">
-                            <span>Payment Key</span>
-                            <span id="stat-pay-key" style="font-size: 0.9rem; font-family: monospace;">--</span>
-                        </div>
-                        <div class="meta-stat" style="margin-left: auto; text-align: right;">
-                            <span>Actions</span>
-                            <div style="display: flex; gap: 10px; margin-top: 5px;">
-                                <button onclick="finishTrip()" class="btn btn-accent" style="padding: 8px 16px; font-size: 0.85rem;">Finish Trip</button>
-                                <button onclick="cancelRide()" class="btn btn-danger" style="padding: 8px 16px; font-size: 0.85rem;">Cancel</button>
-                            </div>
-                        </div>
+                    <div class="input-group" style="max-width: 400px; margin: 0 auto 20px;"><label>Comment</label><input type="text" id="fb-comment" placeholder="Excellent transport..."></div>
+                    
+                    <div class="flex-row" style="max-width: 400px; margin: 0 auto;">
+                        <button onclick="submitTripFeedback()" class="btn btn-success flex-1">Push Feedback</button>
+                        <button onclick="skipFeedback()" class="btn btn-ghost flex-1">Skip</button>
                     </div>
                 </div>
-
-                <!-- FEEDBACK CARD -->
-                <div class="card hidden" id="feedback-card" style="grid-column: 1 / -1; background: linear-gradient(135deg, #05a357, #01502a); color: white;">
-                    <h2 style="color: white; margin-top: 0;">🌟 Rate Your Trip</h2>
-                    <p style="opacity: 0.9; margin-bottom: 20px;">Your trip #<span id="fb-trip-id">--</span> has completed. Please leave feedback.</p>
-                    <div class="grid" style="margin-bottom: 20px;">
-                        <div class="input-group">
-                            <label style="color: #a4eadc;">Rating (1-5)</label>
-                            <input type="number" id="fb-rating" min="1" max="5" value="5" style="background: white; color: black; border: none; font-weight: bold;">
-                        </div>
-                        <div class="input-group">
-                            <label style="color: #a4eadc;">Comment</label>
-                            <input type="text" id="fb-comment" placeholder="How was your ride?" style="background: white; color: black; border: none;">
-                        </div>
-                    </div>
-                    <button onclick="submitRideFeedback()" class="btn btn-primary" style="background: white; color: #05a357;">Submit Feedback</button>
-                    <button onclick="closeFeedback()" class="btn btn-ghost" style="background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; margin-left: 10px;">Skip</button>
-                </div>
-
             </div>
         </div>
 
-        <!-- PAGE: PROFILE -->
+        <!-- PROFILE & ADMIN PAGES -->
         <div id="page-profile" class="page-content">
-            <div class="card" style="max-width: 600px;">
-                <h2>Account Settings</h2>
-                <div class="input-group"><label>Update Name</label><input type="text" id="upd-name"></div>
-                <div class="input-group"><label>Update Phone</label><input type="text" id="upd-phone"></div>
-                <button onclick="updateProfile()" class="btn btn-accent">Save Text Info</button>
-                <hr style="margin: 25px 0;">
-                <div class="input-group">
-                    <label>Profile Picture</label>
-                    <input type="file" id="upd-pic">
-                </div>
-                <button onclick="updateProfilePic()" class="btn btn-primary">Upload New Photo</button>
-                <hr style="margin: 25px 0;">
-                <button onclick="deleteAccount()" class="btn btn-danger" style="width: 100%;">Delete My Account Permanently</button>
+            <div class="card glass-panel" style="max-width: 600px;">
+                <h2>Account Configuration</h2>
+                <div class="input-group"><label>Name</label><input type="text" id="upd-name"></div>
+                <div class="input-group"><label>Phone</label><input type="text" id="upd-phone"></div>
+                <button onclick="updateProfile()" class="btn btn-accent" style="margin-bottom: 20px;">Save Data</button>
+                
+                <div class="input-group"><label>Profile Picture</label><input type="file" id="upd-pic" style="padding: 10px;"></div>
+                <button onclick="updateProfilePic()" class="btn btn-primary" style="margin-bottom: 20px;">Upload Image</button>
+
+                <button onclick="deleteAccount()" class="btn btn-danger">Purge Account Permanently</button>
             </div>
         </div>
 
-        <!-- PAGE: ADMIN -->
         <div id="page-admin" class="page-content">
-            <div class="card">
-                <h2>Data Explorer</h2>
-                <div class="grid">
-                    <button onclick="fetchData('/trip')" class="btn btn-ghost">Fetch All Trips</button>
-                    <button onclick="fetchData('/payment')" class="btn btn-ghost">Fetch All Payments</button>
-                    <button onclick="fetchData('/feedback')" class="btn btn-ghost">Fetch Feedbacks</button>
-                    <button onclick="fetchData('/location')" class="btn btn-ghost">View Tracked Logs</button>
+            <div class="grid">
+                <div class="card glass-panel">
+                    <h2>Data Explorer</h2>
+                    <button onclick="fetchData('/trips')" class="btn btn-ghost">Fetch All Trips</button>
+                    <button onclick="fetchData('/payments')" class="btn btn-ghost">Fetch All Payments</button>
+                    <button onclick="fetchData('/feedbacks')" class="btn btn-ghost">Fetch Feedbacks</button>
                 </div>
-            </div>
-            
-            <div class="card">
-                <h2>Add Manual Feedback</h2>
-                <div class="grid">
-                    <div class="input-group"><label>Trip ID</label><input type="number" id="f-trip-id"></div>
-                    <div class="input-group"><label>Rating (1-5)</label><input type="number" id="f-rating" min="1" max="5"></div>
+
+                <div class="card glass-panel">
+                    <h2>Manual Entry</h2>
+                    <div class="flex-row">
+                        <div class="input-group flex-1"><label>Trip ID</label><input type="number" id="admin-t-id"></div>
+                        <div class="input-group flex-1"><label>Rating (1-5)</label><input type="number" id="admin-rating" min="1" max="5"></div>
+                    </div>
+                    <div class="input-group"><label>Comment</label><input type="text" id="admin-comment"></div>
+                    <button onclick="submitAdminFeedback()" class="btn btn-accent" style="margin-top: 10px;">Submit Administrative Review</button>
                 </div>
-                <div class="input-group"><label>Comment</label><input type="text" id="f-content"></div>
-                <button onclick="submitFeedback()" class="btn btn-accent">Submit Review</button>
             </div>
         </div>
     </div>
 
-    <!-- PERSISTENT LOGS -->
+    <!-- LOGS -->
     <div class="logs-panel">
         <div class="logs-header">
-            <span style="font-weight: 700;">LIVE OVERSEER</span>
-            <button onclick="clearLogs()" class="btn btn-ghost" style="padding: 4px 12px; font-size: 0.7rem;">CLEAR</button>
+            <span>LIVE OVERSEER</span>
+            <button onclick="clearLogs()" class="btn btn-ghost" style="padding: 4px 12px; font-size: 0.7rem; width: auto;">CLEAR</button>
         </div>
         <div id="log-container"></div>
     </div>
 
     <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
     <script src="app.js"></script>
-    <script>
-        // Init state
-        document.getElementById('active-trip-card').classList.add('hidden');
-    </script>
 </body>
 </html>

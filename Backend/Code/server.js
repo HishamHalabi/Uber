@@ -30,13 +30,13 @@ const io = new Server(server, {
       }
 });
 
+
+
+
+
 await ConnectTODB();
 await InMemoryConnect();
 await addlogic(io);
-
-
-
-
 
 const limiter = rateLimit({
       windowMs: 15 * 60 * 1000, // 15 minutes
@@ -76,12 +76,15 @@ app.post("/paymob/webhook", async (req, res) => {
       }
       res.sendStatus(200);
 });
-Location.sync({ alter: true });
+
+
+// sequelize.sync({ alter: true })
 //err handlr 
 app.use((err, req, res, next) => {
       const status = err.status || (err.cause ? (typeof err.cause == "object" ? err.cause.status : 500) : 500);
       return res.status(status).json({ success: false, Message: err.message, err: err.stack });
 });
+
 
 
 server.listen(3000, () => {

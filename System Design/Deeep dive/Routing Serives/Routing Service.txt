@@ -1,0 +1,13 @@
+ML model (driver , ....) +  base ETA
+
+base ETA  divide earth into group of nodes so handle problem
+    Query in good time
+    update easily
+
+to move from one group to another so it's just move to one on the edges
+
+
+faster query  , but can't update well  >>u can calc btw each 2 nodes but what if new route added
+fast query but with 10 minutes update 
+
+ 

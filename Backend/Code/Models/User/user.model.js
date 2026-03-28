@@ -46,12 +46,12 @@ export const User =  sequelize.define('User' , {
          type:DataTypes.STRING , 
         }
 }) ; 
-User.hasOne(Driver, {
-  foreignKey: {
-    name: 'user_id',
-  },
-});
-Driver.belongsTo(User  ,  {foreignKey :  {
-    name : "user_id"
-}});
+// User.hasOne(Driver, {
+//   foreignKey: {
+//     name: 'user_id',
+//   },
+// });
+// Driver.belongsTo(User  ,  {foreignKey :  {
+//     name : "user_id"
+// }});
 

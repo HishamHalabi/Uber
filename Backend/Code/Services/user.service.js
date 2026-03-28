@@ -9,6 +9,7 @@ import { UnAuthorized } from "../Utils/error.utils.js";
 import { findCandidates, getCell } from "./CoreLogic/H3.js";
 import { add, addToSet, deleteFromSet, get } from "./CoreLogic/inMemory.service.js";
 import { calc } from "./CoreLogic/ETA.js";
+import { redisClient } from "../Config/redis.connection.js";
 
 
 const LIMIT = 20;
@@ -36,19 +37,26 @@ export async function updateData(id, body) {
 
 //very costive
 export async function deleteUser(id) {
-    //deleteDriver
-    await driverR.Delete({ user_id: id });
-    //delete locations 
-    await LocationR.Delete({ driver_id: id });
-    //delete feedbacks
+    const t = await sequelize.transaction();
+    try {
+        //deleteDriver
+        await driverR.Delete({ user_id: id }, { transaction: t });
+        //delete locations 
+        await LocationR.Delete({ driver_id: id }, { transaction: t });
+        //delete feedbacks
 
-    const trips = await tripR.Find({ [Op.or]: [{ user_id: id }, { driver_id: id }] });
-    for (let trip of trips) {
-        await FeedBackR.Delete({ trip_id: trip.ID });
+        const trips = await tripR.Find({ [Op.or]: [{ user_id: id }, { driver_id: id }] });
+        for (let trip of trips) {
+            await FeedBackR.Delete({ trip_id: trip.ID }, { transaction: t });
+        }
+        await tripR.Delete({ [Op.or]: [{ user_id: id }, { driver_id: id }] }, { transaction: t });
+
+        await userR.Delete({ ID: id }, { transaction: t });
+        await t.commit();
+    } catch (err) {
+        await t.rollback();
+        throw new Error("failed to delete user");
     }
-    await tripR.Delete({ [Op.or]: [{ user_id: id }, { driver_id: id }] });
-
-    await userR.Delete({ ID: id })
     return true;
 }
 
@@ -74,24 +82,45 @@ export async function findDrivers(lat, lng, trials = 3) {
     return [];
 }
 
-
-//2 drivers only   [Update location]
-async function updateGroups(lat, lng, id, stp) {
-    for (let res = 9; res <= 9; res++) {
-        let index = getCell(lat, lng, res);
-        if (stp == 1) {
-            await addToSet(index, id);
-        } else await deleteFromSet(index, id);
-    }
-}
-
+//Lua script 
 export async function updateDriverLocation(id, lat, lng) {
-    const old = await get(`location:${id}`);
-    if (old) {
-        await updateGroups(old.lat, old.lng, id, -1);
-    }
-    await add(`location:${id}`, JSON.stringify({ lat, lng }));
-    await updateGroups(lat, lng, id, 1);
-    //console.log(await get(`location:${id}`));
+    console.log(lat, lng);
+    const res = 9;
+    const newCell = getCell(lat, lng, res);
+    const locationKey = `location:${id}`;
+    const newCellKey = `group:${newCell}`;
+    await redisClient.eval(`
+        local locationKey = KEYS[1]
+        local newCellKey = KEYS[2]
+
+        local lat = ARGV[1]
+        local lng = ARGV[2]
+        local driverId = ARGV[3]
+        local newCellStr = ARGV[4]
+
+        local oldLocation = redis.call("GET", locationKey)
+
+        if oldLocation then
+            local oldData = cjson.decode(oldLocation)
+            if oldData.cell then
+                
+                redis.call("SREM", "group:" .. oldData.cell, driverId)
+            end
+        end
+
+       
+        redis.call("SET", locationKey, cjson.encode({ lat=lat, lng=lng, cell=newCellStr }))
+        redis.call("SADD", newCellKey, driverId)
+
+        return 1
+    `,
+        {
+            keys: [locationKey, newCellKey],
+            arguments: [String(lat),
+            String(lng),
+            String(id),
+            String(newCell)]
+        });
+
     return { lat, lng };
 }

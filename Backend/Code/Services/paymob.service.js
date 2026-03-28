@@ -40,7 +40,38 @@ export async function makePayment(amt, user) {
     return { paymentKey: paymentKey.data.token, order_id };
   } catch (err) {
     // THIS LOG IS CRITICAL - It tells us the EXACT reason from Paymob
-    console.error("❌ Paymob Error Details:", err.response?.data || err.message);
+    console.error(" Paymob Error Details:", err.response?.data || err.message);
+    throw err;
+  }
+}
+
+export async function refundPayment(transactionId, amt) {
+  try {
+    const API_KEY = process.env.PAYMOB_API_KEY.trim();
+    const amount_cents = Math.round(parseFloat(amt) * 100);
+
+    // 1️⃣ Auth
+    const auth = await axios.post(
+      "https://accept.paymob.com/api/auth/tokens",
+      { api_key: API_KEY }
+    );
+
+    const token = auth.data.token;
+
+    // 2️⃣ Refund request
+    const refund = await axios.post(
+      "https://accept.paymob.com/api/acceptance/void_refund/refund",
+      {
+        auth_token: token,
+        transaction_id: transactionId,
+        amount_cents: amount_cents
+      }
+    );
+
+    return refund.data;
+
+  } catch (err) {
+    console.error(" Paymob Refund Error:", err.response?.data || err.message);
     throw err;
   }
 }

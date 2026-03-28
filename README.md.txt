@@ -16,4 +16,7 @@ day1  >> understanding design of Uber
       ------- let's start by finding nearbuy dr  +  tracking   ----------------------------
 day2 >>  understanding Design of uber +  studying socket io protocol for real time    +  task of finding own algo that perform better than H3 or    give up for it with some optimiztions
 
-day3,4,5,6 >>  DB +redis  , Auth ,understanded how and why we should H3 for this project  , completing implemntation ,  Eid  , some emergencyies  
+day3,4,5,6 >>  DB +redis  , Auth ,understanded how and why we should H3 for this project  , completing implemntation ,  Eid  , some emergencyies 
+days...10 >> reading more about H3 ,routing  ,completing implemtations 
+.....14>>race conditons ,transictions ,payment
+....>>ETA ,ML model>>> progress  >> this the place where i'll put my touch

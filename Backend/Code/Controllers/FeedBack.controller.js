@@ -6,15 +6,16 @@ export async function getALLFeedbacksC(req, res, next) {
         throw new UnAuthorized("not authorized to see all feedbacks");
     }
     const feedBacks = await getAllFeedbacks();
-    return res.status(200).JSON({ Message: "success", data: feedBacks });
+    return res.status(200).json({ Message: "success", data: feedBacks });
 }
 
 export async function getUserFeedbacksC(req, res, next) {
     const feedBacks = await getUserFeedbacks(req.user.id);
-    return res.status(200).JSON({ Message: "success", data: feedBacks });
+    return res.status(200).json({ Message: "success", data: feedBacks });
 }
 
 export async function addFeedbackC(req, res, next) {
+    console.log(req.body);
     const feedBack = await addFeedback(req.body);
-    return res.status(200).JSON({ Message: "success", data: feedBack });
+    return res.status(200).json({ Message: "success", data: feedBack });
 }

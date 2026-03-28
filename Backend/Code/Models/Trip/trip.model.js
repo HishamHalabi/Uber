@@ -45,7 +45,7 @@ export const Trip = sequelize.define('Trip', {
   }, actualETA: {
     type: DataTypes.FLOAT
   }, status: {
-    type: DataTypes.ENUM(...["matched", "arrived", "in progress", "finished", "cancelled"]),
+    type: DataTypes.ENUM(...["matched", "arrived", "inProgress", "finished", "failed", "cancelled"]),
     defaultValue: "matched"
   }, rem_ETA: {
     type: DataTypes.FLOAT
