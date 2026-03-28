@@ -8,7 +8,7 @@
 ## 🚀 Overview
 **UberOps** is a high-performance, real-time ride-sharing engine built from the ground up to solve complex geospatial and concurrency challenges. This isn't just a UI clone; it's a deep-dive into the engineering required to handle thousands of concurrent driver-passenger interactions with atomic integrity.
 
-### [View Live Demo](https://your-demo-link-here.com) | [Video Walkthrough](https://youtube.com/your-video-link) | [API Documentation](./API.md)
+###  | [Video Walkthrough](https://youtu.be/QWqxFS5rs58)
 
 ---
 
@@ -41,7 +41,7 @@ In a high-traffic app, "Double Booking" a driver is a failure.
 
 ## 📸 System Walkthrough
 > [!TIP]
-> **Watch the full 2-minute video walkthrough on YouTube: [Click Here](https://youtu.be/QWqxFS5rs58)**
+> **Watch the full  video walkthrough on YouTube: [Click Here](https://youtu.be/QWqxFS5rs58)**
 
 #### 🔐 Identity Gateway
 Secure authentication with role-based access (Passenger vs. Driver) and OTP email verification.
