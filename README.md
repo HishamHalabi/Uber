@@ -41,7 +41,7 @@ In a high-traffic app, "Double Booking" a driver is a failure.
 
 ## 📸 System Walkthrough
 > [!TIP]
-> **Watch the full 2-minute video walkthrough on YouTube: [Click Here](https://youtube.com/your-video-link)**
+> **Watch the full 2-minute video walkthrough on YouTube: [Click Here](https://youtu.be/QWqxFS5rs58)**
 
 #### 🔐 Identity Gateway
 Secure authentication with role-based access (Passenger vs. Driver) and OTP email verification.
