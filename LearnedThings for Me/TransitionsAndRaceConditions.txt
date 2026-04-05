@@ -1,0 +1,13 @@
+Race conditions
+   >>SQL ,  Redis >>single threaded
+    basicly u should think about multi user
+    get this place is avilable (user1 , use2 do)
+    occupy it(user 1 ,2) that's bad
+   >>try to make check and assign happens as once
+
+
+redis instructions are micro seconds while Db is millisecond
+write instructions in order if failure u undo needed staff
+
+Transictions is very good
+Queues like kafka  
