@@ -1,13 +1,37 @@
-ML model (driver , ....) +  base ETA
+for my PC 
+     i use only Egypt Graph and hence Uber is not for country to country travel
+     so we can have server for each country with same logic
+     >>by this i could test cool
 
-base ETA  divide earth into group of nodes so handle problem
-    Query in good time
-    update easily
+-----------------------------------------------
+1 Graph Dataset 
+       >>  OSM
+       for each hexagon  >> we store nodes ,edges on it , processed things also
 
-to move from one group to another so it's just move to one on the edges
+
+Grouping edges  >>using hexa
+precomputed blocks paths >> hexa of res (7..9) to be decided
+--------------------
+2 Now Graph is divided into cells 
+with precalcing path fr each 2 nds in this cell
+so Query ERA(u, v) is just jumping to one of borders 
+
+---------------------------
+3  for having update weight of graph  , updated ETA >>
+GPS singals cause noise >> so we match signal to some road (map matching)
+map matching logic  >> 
+       some built in 
+       or in my project
+       findNearby edges (20 edges ) pick closest edge 
+       return edgeId
+
+each edge have  avg  real time speed  +  history time speed   + ML(weather , ...) >> predicted speed
+                 >> updated weight = time 
 
 
-faster query  , but can't update well  >>u can calc btw each 2 nodes but what if new route added
-fast query but with 10 minutes update 
+driver movements >> real time updates >>  blocks updates  >> done 
+-------------------------
 
- 
+
+
+so finaly >>getEdgeId>> update Info  >> update Block precom paths(batching not always) >> able to answer queries  ETA(u,v)
