@@ -1,1 +1,0 @@
-i seprate logic as it's not about copying uber system but adding my own optimizations 

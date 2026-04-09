@@ -1,0 +1,6 @@
+from previous
+N   = active users
+M   = active trips 
+
+UpdateCompentsOper       =   N/6 >> cold path 
+GetETA each 150 second   =   M / 10 000

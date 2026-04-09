@@ -1,7 +1,8 @@
-for my PC 
-     i use only Egypt Graph and hence Uber is not for country to country travel
-     so we can have server for each country with same logic
-     >>by this i could test cool
+
+---------------------------------------------------
+all these ETA services 
+      dealing with InMemory (Redis in My)
+      queus for Cold paths
 
 -----------------------------------------------
 1 Graph Dataset 

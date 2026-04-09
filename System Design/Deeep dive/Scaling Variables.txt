@@ -1,0 +1,9 @@
+from previous
+N   = active users
+M   = active trips 
+
+
+updatedLocatio,Trip  = it;s about DB , InMemory access only
+getNearbyDrivers     = about 100 
+UpdateCompentsOper       =   N/6 >> cold path
+GetETA each 150 second   =   M/10000
