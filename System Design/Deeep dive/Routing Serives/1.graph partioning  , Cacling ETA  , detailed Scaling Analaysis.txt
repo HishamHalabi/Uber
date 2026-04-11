@@ -1,0 +1,94 @@
+all written here is my effort , not even what Uber internally do ,just knowing that they divide compents and precompute
+-----------------------------
+We will use OSM datset
+
+Graph Descriptions 
+     nodes >> (lat , lng , .. ) some pins at map
+     edges >>  roads 
+ieval  :    in OSM  >> about  8  billions (node ,edge) covers earth
+-----------------------------------------------------------------------
+we will divide planet graph int compents  >> 
+           i'll use hexagons of h3 resoultion 7     
+           hence we have about 100 million hexa at this resolution
+           assuming at least 80% of earth is unused for uber  (71 water +  islands  + deserts  + volcaons areas.....)
+           so we can assume we deal with about 20 million hexagon at most
+
+eval  :  20 millions hexagons covers earth 
+------------------------------------- -----------------------------------
+
+eval  : 
+so each compenet of graph have approximaltey  (8e9)/(2e7) >>  400 >> we will say 1000 nodes+edge  (dense areas)
+>>we can see updating (edges  ,nodes ,weights) or preprocessing compenents is ok
+
+------------------------------------- -----------------------------------
+ ------border nodes -------
+now we have comp = hexa (res 7) : 
+     -have about 500 node , 500 edge 
+     -it's area is 5km^2
+     -it's prem  is 1km
+
+
+border nodes >> nodes that in edge with another node in another hexa
+
+cnt border nodes =  assuming 4.9 km^2 is insider arem having border nodes
+       so cnt =  (5  - 4.9) / 5   *  n nodes =  10 nodes  
+
+eval borderNodes per hexa =  10 nodes
+-----------------------------------------------------------------------
+to calc ETA(u , v) 
+      -let's pick the first hexa containing the two nodes   (by changin resoultion)
+      -for this big hexa of res x consider all hexa of res 5 inside :
+              form graph o border nodes of thes hexa     + edges btw them
+       do sum min path algo
+
+
+for this miniGraph :           
+       cntNodes = cntHexa  * BorderNodes = cntHexa  *  10
+            
+       ---i'll calc cntHexa in term of duration as this help me in scaling analysis----
+       cntHexa = BigHexaSize/5
+       BigHexaSize =  speedDriver^2  * duration^2 
+       cntHexa =     ( speedDriver^2/5km  *  duration^2 ) 
+       assuming speed   =  70km per hr   , duration in minutes
+  
+
+       cntNodes =  .00008  *  duration^2 in seconds
+       
+       using shortest path algo  N*log
+       query cost   =  (.0001  *   duration^2 in seconds) * log  = 0001  * duration^2
+       
+        
+
+eval  query cost  =  .0001  * duration^2 in seconds
+----------------------------------------------------------------
+for 2M active drivers
+Assume 1M active trip
+Assume We calc ETA each 150 seconds
+Assume system can handle MX simple  operation assigned to calc ETA  (ETA itself isnt'  simple oper)
+
+
+now let'd define interval of length Test 
+       we consider trips that it's duration <=test
+       see if system can do all operations of trips at Test interval
+       if this ok for all Test values >>system can scale
+
+
+what system can do >> MX  * Test  
+what needed  >> (active trips  / Test)  *  (.0001) *  (Test ^2) =
+               active Trips    *  (.0001) * Test 
+
+
+we see that active Trips    *  (.0001) * Test   <=     MX * Test  
+for MX >= activeTrips/10000
+
+eval :  
+   system can scall very good
+   we can assume system do  activeTrips/10000 per second  
+                   (i enjoyed this trick while proving it , if MX operations mustcover trips/10000 then system do trips/10000 each second)
+
+
+
+
+
+
+

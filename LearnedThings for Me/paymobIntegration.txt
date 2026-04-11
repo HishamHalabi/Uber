@@ -1,0 +1,68 @@
+import axios from "axios"
+
+
+
+
+
+//credentials
+const auth = await axios.post(
+  "https://accept.paymob.com/api/auth/tokens",
+  { api_key: process.env.PAYMOB_API_KEY }
+);
+const token = auth.data.token;
+
+
+//make apyemnt
+const order = await axios.post(
+  "https://accept.paymob.com/api/ecommerce/orders",
+  {
+    auth_token: token,
+    delivery_needed: false,
+    amount_cents: 1500,
+    currency: "EGP",
+    items: []
+  }
+);
+const orderId = order.data.id;
+
+
+//payment key to send for FrontEnd
+const paymentKey = await axios.post(
+  "https://accept.paymob.com/api/acceptance/payment_keys",
+  {
+    auth_token: token,
+    amount_cents: 1500,
+    expiration: 3600,
+    order_id: orderId,
+    billing_data: {
+      email: "user@email.com",
+      first_name: "John",
+      last_name: "Doe",
+      phone_number: "01000000000",
+      apartment: "NA",
+      floor: "NA",
+      street: "NA",
+      building: "NA",
+      city: "Cairo",
+      country: "EG",
+      postal_code: "00000",
+      state: "NA"
+    },
+    currency: "EGP",
+    integration_id: PAYMOB_CARD_INTEGRATION_ID
+  }
+);
+
+//frontEnd take the key do the payment
+
+//when it's finished
+
+app.post("/paymob/webhook", (req, res) => {
+  const payment = req.body;
+  if (payment.obj.success) {
+    // update trip status
+    // mark payment successful
+  }
+  res.sendStatus(200);
+});
+

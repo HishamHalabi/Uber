@@ -1,0 +1,38 @@
+
+---------------------------------------------------
+all these ETA services 
+      dealing with InMemory (Redis in My)
+      queus for Cold paths
+
+-----------------------------------------------
+1 Graph Dataset 
+       >>  OSM
+       for each hexagon  >> we store nodes ,edges on it , processed things also
+
+
+Grouping edges  >>using hexa
+precomputed blocks paths >> hexa of res (7..9) to be decided
+--------------------
+2 Now Graph is divided into cells 
+with precalcing path fr each 2 nds in this cell
+so Query ERA(u, v) is just jumping to one of borders 
+
+---------------------------
+3  for having update weight of graph  , updated ETA >>
+GPS singals cause noise >> so we match signal to some road (map matching)
+map matching logic  >> 
+       some built in 
+       or in my project
+       findNearby edges (20 edges ) pick closest edge 
+       return edgeId
+
+each edge have  avg  real time speed  +  history time speed   + ML(weather , ...) >> predicted speed
+                 >> updated weight = time 
+
+
+driver movements >> real time updates >>  blocks updates  >> done 
+-------------------------
+
+
+
+so finaly >>getEdgeId>> update Info  >> update Block precom paths(batching not always) >> able to answer queries  ETA(u,v)

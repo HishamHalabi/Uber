@@ -1,0 +1,41 @@
+Weight of Edge = 
+           distance /  predictedSpeed
+
+--predictedSpeed = combine (history avg speed on this road ,  avgRealTimeSpeed ,  ML(factors))
+---------------------------------------------------------------
+
+
+
+i'll use the idea of batch processing 
+     for eachUpdate on road 
+                  i'll update edge info normally 
+                  psh update to coment to be updated
+                  when n of updates reach x   i'll update the precomputing info
+                  >>offcourse ther's exceptions for signafict change  >> like removing road , ..... here changes applied once
+
+    
+    
+    assuming N_hexa =  N of Nodes assigned for this hexa
+    cost of updating block =  N_hexa   *  of borders
+
+    choosing x = N_hexa
+         
+         driver send update-location each 60 second (disucssed before in h3 and normal trip)
+         with 2M active driver   (acc to my scaling requirments)
+         
+         nof updates overAll persecond is 2M / 60 
+         nof need to be updatedBlocks per second   2M  / (60  * x)
+        
+         total operations persecond   =  ((2M  / (60*N_hexa)    *  N_hexa  * 10)   =  (2M / 60)   * 10 >> can scale very cool
+         total    = about 500 000 simple operations
+
+
+  
+
+   
+   500 update edge   to update block is ok becuase   :  
+             edge update mean just driver send his current speed  ,  + having about 100 edges in each compent
+             so this number happens freqntly
+
+        
+    
