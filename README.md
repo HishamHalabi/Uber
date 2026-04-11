@@ -33,9 +33,15 @@ I spent significant effort researching and implementing **H3 (Hexagonal Hierarch
 In a high-traffic app, "Double Booking" a driver is a failure. 
 - **Implementation**: Integrated **Redis locking** to ensure that once a driver accepts a dispatch, the transaction is atomic. No two passengers can ever grab the same driver at the same millisecond.
 
-### 3. Payment Integrity & ETA Telemetry
+### 3. Multi-Graph ETA Routing Engine
+I abandoned basic proximity estimators to build a highly accurate, mathematical street-routing engine.
+- **OSM Data Ingestion**: Built a custom node parser capable of mapping raw OpenStreetMap (`.pbf`) geography into an active in-memory multigraph.
+- **Bounded Dijkstra Pathfinding**: Instead of resolving $O(V+E)$ Dijkstra calculations blindly over millions of city nodes, the subsystem dynamically bounds its routing limits to adjacent H3 hexagon shards, executing true street routing with sub-millisecond efficiency.
+- **Machine Learning & Traffic Memory**: Fused Redis (to ingest real-time traffic anomalies and flux) with MongoDB (to act as the permanent historical anchor), ensuring the engine's ML models survive server cache reboots flawlessly via a smart Cache Warming strategy.
+
+### 4. Payment Integrity & Active Telemetry
 - **Atomic Transactions**: Using Sequelize transactions to ensure that a 'Trip' and 'Payment' status always sync or fail together.
-- **ETA Flux**: Dynamic ETA calculation based on real-time driver movement, pushed via Socket.io to keep the passenger's UI "alive".
+- **Socket Stream Pipeline**: Coordinates dynamic real-time driver movement, pushed via Socket.io to keep the passenger's tracking UI "alive" with minimal latency.
 
 ---
 
