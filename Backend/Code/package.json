@@ -12,6 +12,10 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+<<<<<<< HEAD
+=======
+    "@datastructures-js/priority-queue": "^6.3.5",
+>>>>>>> f8d61a5 (ETA  + Graph + MapMatching)
     "axios": "^1.13.6",
     "bcryptjs": "^3.0.3",
     "crypto-js": "^4.2.0",
@@ -20,9 +24,17 @@
     "h3-js": "^4.4.0",
     "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.3",
+<<<<<<< HEAD
     "multer": "^2.1.1",
     "mysql2": "^3.20.0",
     "nodemailer": "^8.0.3",
+=======
+    "mongoose": "^9.4.1",
+    "multer": "^2.1.1",
+    "mysql2": "^3.20.0",
+    "nodemailer": "^8.0.3",
+    "osm-pbf-parser": "^2.3.0",
+>>>>>>> f8d61a5 (ETA  + Graph + MapMatching)
     "redis": "^5.11.0",
     "sequelize": "^6.37.8",
     "socket.io": "^4.8.3"

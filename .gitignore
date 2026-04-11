@@ -1,0 +1,16 @@
+
+**/node_modules/
+**/.env
+**/*.log
+
+
+**/*.pbf
+**/Dataset/
+**/Datasets/
+
+
+**/.DS_Store
+**/Thumbs.db
+
+
+**/.gemini/

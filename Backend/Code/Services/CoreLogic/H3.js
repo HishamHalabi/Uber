@@ -10,6 +10,12 @@ export function getCellCenter(index) {
     return h3.cellToLatLng(index);
 }
 
+<<<<<<< HEAD
+=======
+export function getNeigbours(index) {
+    return h3.gridDisk(index, 1);
+}
+>>>>>>> f8d61a5 (ETA  + Graph + MapMatching)
 
 //i didnt't use builtIn gridDisk  of some fixed k to avoid going farther with no need
 export async function kRing(index, limit = 20) {
@@ -42,6 +48,18 @@ export async function kRing(index, limit = 20) {
             if (d) candidates.push(d);
             if (candidates.length >= limit) return candidates;
         }
+<<<<<<< HEAD
+=======
+
+        for (let i = 0; i < cnt; ++i) {
+            const neigbours = getNeigbours(cells[i]);
+            for (let n of neigbours) {
+                if (vis.has(n)) continue;
+                vis.add(n);
+                cells.push(n);
+            }
+        }
+>>>>>>> f8d61a5 (ETA  + Graph + MapMatching)
     }
     return candidates;
 }

@@ -1,6 +1,10 @@
 import express from "express";
 import { ConnectTODB, sequelize } from "./Config/db.connection.js";
 import { InMemoryConnect } from "./Config/redis.connection.js";
+<<<<<<< HEAD
+=======
+import { connectMongo } from "./Config/mongo.connection.js";
+>>>>>>> f8d61a5 (ETA  + Graph + MapMatching)
 import { AuthRouter } from "./Routes/Auth.routes.js";
 import { userRouter } from "./Routes/user.routes.js";
 import { Server } from "socket.io"
@@ -35,6 +39,10 @@ const io = new Server(server, {
 
 
 await ConnectTODB();
+<<<<<<< HEAD
+=======
+await connectMongo();
+>>>>>>> f8d61a5 (ETA  + Graph + MapMatching)
 await InMemoryConnect();
 await addlogic(io);
 
