@@ -42,6 +42,7 @@ export async function kRingGraphMatching(node) {
                 mn[1] = edge;
             }
         }
+        console.log(mapped_edges.size);
         if (mn[1]) {
             return mn[1];
         }
@@ -55,6 +56,7 @@ export async function kRingGraphMatching(node) {
             }
         }
     }
+    console.log("i didnt find any edge to match")
 }
 
 export async function MatchEdge(node) {
@@ -62,7 +64,7 @@ export async function MatchEdge(node) {
 }
 
 export async function MatchNode(node) {
-    const edge = await kRingGraphMatching(node);
+    const edge = await MatchEdge(node);
     const u = edge.u, v = edge.v;
     const distU = HarvesineDistance(u, node);
     const distV = HarvesineDistance(v, node);

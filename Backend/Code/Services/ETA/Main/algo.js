@@ -1,4 +1,5 @@
-import { add, Delete, get, getSet } from "../../CoreLogic/inMemory.service.js";
+import { getCell } from "../../CoreLogic/H3.js";
+import { add, addToSet, Delete, get, getSet } from "../../CoreLogic/inMemory.service.js";
 import { PriorityQueue } from "@datastructures-js/priority-queue";
 async function ML(avg, hist, info = {}) {
     return .5 * avg + .5 * hist;
@@ -19,13 +20,14 @@ async function getPredictedSpeed(id) {
 }
 
 export async function getWeight(id) {
-    const data = await get(`edge:${id}`);
-    if (data.weight) return data.weight;
-    let w = data.dist / await getPredictedSpeed(id);
+    const edge = await get(`edge:${id}`);
+    if (edge.weight) return edge.weight;
+    const dist = edge.dist || HarvesineDistance(data.u, data.v);
+    let w = dist / await getPredictedSpeed(id);
     return w;
 }
 
-export async function dijkstra(src, G, isPrecomuting = 0, isRev = 0) {
+export async function dijkstra(src, G,  isRev = 0) {
     let pq = new PriorityQueue((a, b) => a.path_w - b.path_w);
     pq.enqueue({ u: src, path_w: 0 });
     const srcKey = `${src.lat},${src.lng}`;
@@ -48,7 +50,7 @@ export async function dijkstra(src, G, isPrecomuting = 0, isRev = 0) {
         }
     }
 
-
+    const index =  getCell(src.lat , src.lng) ; 
     await Promise.all(
         Array.from(path.values()).map(async (path_data) => {
             let v = path_data.node;
@@ -61,12 +63,9 @@ export async function dijkstra(src, G, isPrecomuting = 0, isRev = 0) {
             const cross_id = `cross_${u.lat}_${u.lng}_${v.lat}_${v.lng}`;
             let data = await get(`edge:${cross_id}`);
             if (!data) {
-                data = { id: cross_id, u, v, dist: val, cntReal: 0, cntAvg: 0, avgRealTimeSpeed: 0, avgHistoricSpeed: 0, ML_info: null };
+                data = { id: cross_id, u, v, weight: val };
             }
-
-            data.weight = val;
-            data.type = "cross";
-
+            addToSet(`starEdges:${index}+${v}`   ,  id) ; 
             return add(`edge:${cross_id}`, JSON.stringify(data));
         })
     );
@@ -79,8 +78,6 @@ export async function minPath(u, v, G) {
     return dist.has(vKey) ? dist.get(vKey).w : null;
 }
 export async function preCompute(index) {
-    await Delete(`borderNodes:${index}`);
-    await Delete(`borderEdges:${index}`);
     const edges = await getSet(`${index}`, 'edges_7');
 
     let G = new Map();
@@ -89,6 +86,7 @@ export async function preCompute(index) {
     for (let edge of mapped_edges) {
         if (!edge) continue;
         const { id, u, v, dist } = edge;
+
         const uKey = `${u.lat},${u.lng}`;
         const vKey = `${v.lat},${v.lng}`;
 
@@ -103,8 +101,8 @@ export async function preCompute(index) {
     for (let nd_str of src) {
         if (nd_str === "[object Object]") continue;
         let nd = JSON.parse(nd_str);
-        dijkstra(nd, G, 1);
-        dijkstra(nd, rev_G, 1, 1);
+        dijkstra(nd, G);
+        dijkstra(nd, rev_G,1);
     }
 }
 

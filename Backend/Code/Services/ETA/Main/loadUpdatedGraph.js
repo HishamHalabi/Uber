@@ -32,7 +32,7 @@ function isPointInPolygon(lat, lon, polygon) {
     return inside;
 }
 
-function isInCairo(node) {
+export function isInCairo(node) {
     return isPointInPolygon(node.lat, node.lon, cairoPolygon);
 }
 
@@ -40,38 +40,46 @@ const nodes = new Map();
 const hexas = new Set();
 const edges = new Set();
 
-async function add_edge(u, v, id) {
+export async function add_edge(u, v, id  , isStarEdge = 0 ) {
     if (edges.has(id)) return;
     edges.add(id);
 
     const cell7_u = getCell(u.lat, u.lng, 7);
     const cell7_v = getCell(v.lat, v.lng, 7);
 
-    if (!hexas.has(cell7_u)) {
-        hexas.add(cell7_u);
-        await Delete(`edges_7:${cell7_u}`);
-    }
-    if (!hexas.has(cell7_v)) {
-        hexas.add(cell7_v);
-        await Delete(`edges_7:${cell7_v}`);
-    }
-
-    const dist = await HarvesineDistance(u, v);
-
+    hexas.add(cell7_u);
+    hexas.add(cell7_v);
+    
     await addToSet(`${cell7_u}`, id, "edge_7");
-
     if (cell7_u !== cell7_v) {
         await addToSet(`${cell7_v}`, id, "edge_7");
+        await add(`borderEdges:${cell7_u}`, id);
+        await add(`borderNodes:${cell7_u}`, u);
     }
-
-    await add(`edge:${id}`, JSON.stringify({ dist }));
+    await add(`edge:${id}`, JSON.stringify({ u, v }));
 }
+
+
+export async function reload(index) {
+    const edges = await getSet(index, "edge_7");
+    await Delete(`borderEdges:${index}`);
+    await Delete(`borderNodes:${index}`);
+    await Delete(`starEdges:${index}`);
+    await Delete(`cnt_updates:${index}`);
+    
+    for (const edge of edges) {
+        const { u, v } = await get(`edge:${edge}`);
+        await add_edge(u, v, edge);
+    }
+    await preCompute(index);
+}
+
 
 function Pre() {
     return new Promise((resolve, reject) => {
         const osm = parseOSM();
 
-        fs.createReadStream("../Dataset/egypt-260409.osm.pbf")
+        fs.createReadStream("../Dataset/egypt-260410.osm.pbf")
             .pipe(osm)
             .pipe(
                 through.obj(function (items, enc, next) {
@@ -118,6 +126,7 @@ async function main() {
 
     console.log("Processing...");
     await Pre();
+
 
     console.log("Precomputing...");
     for (const h of hexas) {

@@ -1,8 +1,9 @@
 import { getCell, getNeigbours } from "../../CoreLogic/H3.js";
 import { add, Delete, deleteFromSet, get, getSet, sizeOFSet } from "../../CoreLogic/inMemory.service.js";
-import { MatchEdge, MatchNode } from "./mapMatching.js";
+import { kRingGraphMatching, MatchEdge, MatchNode } from "./mapMatching.js";
 import { minPath, preCompute } from "./algo.js";
-import { add_edge } from "./loadUpdatedGraph.js";
+import { add_edge, isInCairo } from "./loadUpdatedGraph.js";
+import { EdgeModel } from "../../../Config/mongo.connection.js";
 
 /*
   we use 7 resolution hexa basicly , 9  is only for fast edge , node matching 
@@ -10,8 +11,18 @@ import { add_edge } from "./loadUpdatedGraph.js";
    cnt_updates:h3Index >> number of updates in this hexa
    edge_7 or_9 :h3Index >> edges in this hex
    borderEdges:h3Index >> border edges of this hexa
+   starEdges:h3+node >> edges from some border node to internalNode or vice versa
    edge:id >> {weight  , cntReal , cntAvg , avgRealTimeSpeed , avgHistoricSpeed , ML_info , cell_7 ,cell_9 , type:"normal|cross"}
-*/
+
+   virutal edges >> via precomute >>has weight
+   so  : 
+    edge weight  >>w || getW
+    edge dist >> dist  || getD
+    edge speed = speed || default speed
+
+
+    inDB i only store edge with its categories  , i can use index to find them fast
+ */
 
 
 export async function updateTraffic(u, update_info) {
@@ -19,39 +30,39 @@ export async function updateTraffic(u, update_info) {
     if (!edge) {
         return;
     }
+
     let info = await get(`edge:${edge.id}`);
     if (!info || !update_info || !update_info.action) {
         return;
     }
 
     if (update_info.action == "add") {
-        add_edge(edge.u, edge.v, edge.id, edge.dist);
-        return;
+        add_edge(edge.u, edge.v, edge.id);
     }
 
-    if (update_info.action == "deleted") {
-        deleteFromSet(info.cell_7, edge.id, "edge_7");
-        deleteFromSet(info.cell_9, edge.id, "edge_9");
-        deleteFromSet(info.cell_7, edge.id, "borderEdges");
-        Delete(`edge:${edge.id}`);
+    else if (update_info.action == "deleted") {
+        await Promise.all([
+            deleteFromSet(info.cell_7, edge.id, "edge_7"),
+            deleteFromSet(info.cell_9, edge.id, "edge_9"),
+            deleteFromSet(info.cell_7, edge.id, "borderEdges"),
+            deleteFromSet(info.cell_7, edge.u, "borderNodes"),
+            Delete(`edge:${edge.id}`)
+        ]);
         preCompute(info.cell_7);
-        preCompute(info.cell_9);
         return;
     }
 
 
     if (update_info.speed) {
-        let { cntReal, cntAvg, avgRealTimeSpeed, avgHistoricSpeed, ML_info, cell_7, cell_9 } = info;
+        let { cntReal = 0, cntAvg = 0, avgRealTimeSpeed = 0, avgHistoricSpeed = 0 } = info;
         cntAvg = Math.min(cntAvg, 1000);
         cntReal = Math.min(cntReal, 1000000000);
         add(`edge:${edge.id}`, JSON.stringify({
-            dist: edge.dist,
-            cntReal: cntReal + 1, cntAvg: cntAvg + 1,
+            ...info, // Ensure u, v, id, and type are kept!
+            cntReal: cntReal + 1,
+            cntAvg: cntAvg + 1,
             avgRealTimeSpeed: (avgRealTimeSpeed * cntReal + update_info.speed) / (cntReal + 1),
-            avgHistoricSpeed: (avgHistoricSpeed * cntAvg + update_info.speed) / (cntAvg + 1),
-            ML_info: ML_info,
-            cell_7: cell_7,
-            cell_9: cell_9
+            avgHistoricSpeed: (avgHistoricSpeed * cntAvg + update_info.speed) / (cntAvg + 1)
         }));
     }
     if (update_info.factors) {
@@ -67,7 +78,7 @@ export async function updateTraffic(u, update_info) {
         cnt = 0;
         preCompute(info.cell_7);
     }
-    await add(`updates:${info.cell_7}`, cnt + 1);
+    add(`updates:${info.cell_7}`, cnt + 1);
 }
 
 
@@ -78,25 +89,25 @@ export async function getETA(u, v) {
     let G = new Map();
     let u_index = getCell(u.lat, u.lng, 7);
     let v_index = getCell(v.lat, v.lng, 7);
-    const borderEdges_u = await getSet(`borderEdges:${u_index}`);
-    const borderEdges_v = await getSet(`borderEdges:${v_index}`);
+    const Edges_u = await getSet(`starEdges:${u_index}+${u}`);
+    const Edges_v = await getSet(`starEdges:${v_index}+${v}`);
 
 
     const uMatchKey = `${u.lat},${u.lng}`;
     const vMatchKey = `${v.lat},${v.lng}`;
 
-    const b_u_edges = await Promise.all(borderEdges_u.map(id => get(`edge:${id}`)));
+    const b_u_edges = await Promise.all(Edges_u.map(id => get(`edge:${id}`)));
     for (let edge of b_u_edges) {
         if (!edge) continue;
         if (!G.has(uMatchKey)) G.set(uMatchKey, []);
-        G.get(uMatchKey).push({ node: edge.v, id: edge.id, dist: edge.dist });
+        G.get(uMatchKey).push({ node: edge.v, id: edge.id });
     }
 
-    const b_v_edges = await Promise.all(borderEdges_v.map(id => get(`edge:${id}`)));
+    const b_v_edges = await Promise.all(Edges_v.map(id => get(`edge:${id}`)));
     for (let edge of b_v_edges) {
         if (!edge) continue;
         if (!G.has(vMatchKey)) G.set(vMatchKey, []);
-        G.get(vMatchKey).push({ node: edge.u, id: edge.id, dist: edge.dist });
+        G.get(vMatchKey).push({ node: edge.u, id: edge.id});
     }
 
     let vis = new Set();
@@ -133,7 +144,7 @@ export async function getETA(u, v) {
             const { id, u: edge_u, v: edge_v, dist } = edge;
             const loop_uKey = `${edge_u.lat},${edge_u.lng}`;
             if (!G.has(loop_uKey)) G.set(loop_uKey, []);
-            G.get(loop_uKey).push({ node: edge_v, id, dist });
+            G.get(loop_uKey).push({ node: edge_v, id});
         }
 
         for (let J = 0; J < cnt; ++J) {
@@ -155,3 +166,13 @@ export async function getETA(u, v) {
     }
     return null;
 }
+
+let  u =  {
+    lat : 30.0444 , 
+    lng : 31.2357
+}
+,v   =  { 
+    lat : 30.0911,lng  :  31.3200
+}
+// console.log(await getETA(u , v)) ; 
+console.log(isInCairo(u));
