@@ -16,7 +16,10 @@ according to resoltions
      >> i think this comlexity can be optimized so muc
    2.active drivers ,trips stored inMemory till they are became unactive moves to DB updates  (basicly locations)
           
-
+Scaling here is easy to prove :
+  each driver update location each 4s  , 2M active driver
+  >> 500 000  write per second is ok , (dealing with InMemory (cach ,etc)
+  trip updating  scaling is acctualy ETA query each 150 ...180 seconds >> i detailed discusses this in ETA part because ETA is my effort for this proj
 
 
 4.what DB Uber use  ?  
