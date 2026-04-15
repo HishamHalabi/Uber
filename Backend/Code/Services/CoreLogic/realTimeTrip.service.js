@@ -5,6 +5,8 @@ import { findDrivers, updateDriverLocation } from "../user.service.js";
 import { add, Delete, get, isAvalaible, offline } from "./inMemory.service.js";
 import { validateSocket, socketSchemas } from "../../Mildewares/validate.mildeware.js";
 import { auth } from "../../Mildewares/authenticate.mildeware.js";
+import { updateTraffic } from "../ETA/Main/index.js";
+import { updateG } from "../ETA/index.js";
 
 /*
   available:id >> trip_id
@@ -156,12 +158,17 @@ export async function addlogic(io) {
             io.to(`trip:${trip_id}`).emit("startRide", trip, paymentKey, Date.now());  //FrontEnd      
         }));
 
-        socket.on("update-location", validateSocket(socketSchemas.updateLocation, async (locations = [], trip_id, callback) => {
+        socket.on("update-location", validateSocket(socketSchemas.updateLocation,
+             async (locations = [], trip_id, callback) => {
             try {
 
                 if (socket.user.role != "driver" || locations.length == 0) return;
-                for (const { lat, lng } of locations) {
+                for (const { lat, lng , info } of locations) {
                     await updateDriverLocation(socket.user.ID, lat, lng);
+                    if (info.speed && info.action)  // each 150 seconds
+                    {
+                              await updateG(u , info) ; 
+                    }
                 }
                 let idx = locations.length - 1;
                 callback({ success: true });
