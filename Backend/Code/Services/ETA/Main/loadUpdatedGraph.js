@@ -1,3 +1,5 @@
+////the cairopolygon ,  isPointInpoly  from chatGpt
+
 import fs from "fs";
 import through from "through2";
 import parseOSM from "osm-pbf-parser";
@@ -6,6 +8,7 @@ import { add, addToSet, Delete } from "../../CoreLogic/inMemory.service.js";
 import { preCompute, HarvesineDistance } from "./algo.js";
 import { InMemoryConnect } from "../../../Config/redis.connection.js";
 import { connectMongo } from "../../../Config/mongo.connection.js";
+
 
 const cairoPolygon = [
     [30.103, 31.256],
@@ -133,7 +136,7 @@ async function main() {
         await preCompute(h);
     }
 
-    console.log("Done ");
+    console.log("loading Graph is Done ");
 }
 
 main().catch(console.error);
