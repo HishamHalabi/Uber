@@ -1,5 +1,5 @@
 > [!NOTE]
-> **Project Attribution**: Core backend logis, system design, and geospatial indexing were developed 100% by me. I utilized AI assistance for the glassmorphic frontend styling, README refinement, and API documentation.
+> **Project Attribution**: Core backend logis, system design, and geospatial indexing were developed ,ETA (map matching  , graph  ,algos ) 100% by me. I just used AI assistance for the frontend and documenting myProject
 
 # UberOps. | Advanced Ride Orchestration Subsystem
 
