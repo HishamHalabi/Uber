@@ -133,7 +133,7 @@ async function main() {
         await preCompute(h);
     }
 
-    console.log("Done ✅");
+    console.log("Done ");
 }
 
 main().catch(console.error);
